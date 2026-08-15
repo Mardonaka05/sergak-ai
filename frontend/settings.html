@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Sozlamalar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <div class="settings-layout">
+        <div class="settings-nav">
+          <div class="settings-nav-item active" onclick="switchSettings(this,'sg-general')"><i data-lucide="sliders"></i>Umumiy</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-notify')"><i data-lucide="bell"></i>Ogohlantirishlar</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-integ')"><i data-lucide="plug-2"></i>Integratsiyalar</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-ai')"><i data-lucide="cpu"></i>AI & Performance</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-storage')"><i data-lucide="database"></i>Saqlash siyosati</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-security')"><i data-lucide="lock"></i>Xavfsizlik</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-appearance')"><i data-lucide="palette"></i>Ko'rinish</div>
+          <div class="settings-nav-item" onclick="switchSettings(this,'sg-about')"><i data-lucide="info"></i>Tizim haqida</div>
+        </div>
+
+        <div class="settings-content">
+          <div class="settings-section active" id="sg-general">
+            <div class="settings-h">Umumiy sozlamalar</div>
+            <div class="settings-sub">Tizim asosiy parametrlari va til</div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon"><i data-lucide="building-2"></i></div>
+                <div><div class="settings-card-title">Korxona ma'lumotlari</div><div class="settings-card-desc">Tizimda ko'rinadigan korxona nomi</div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Korxona nomi</label><input class="form-input" value="Bekobod Sanoat Korxonasi"></div>
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Manzil</label><input class="form-input" value="Toshkent vil., Bekobod sh."></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon" style="background:var(--gradient-success)"><i data-lucide="globe"></i></div>
+                <div><div class="settings-card-title">Til va vaqt</div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Til</label><select class="form-select"><option>O'zbek (lotin)</option><option>O'zbek (kirill)</option><option>Русский</option><option>English</option></select></div>
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Vaqt zonasi</label><select class="form-select"><option>Asia/Tashkent (UTC+5)</option></select></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="sg-notify">
+            <div class="settings-h">Ogohlantirishlar</div>
+            <div class="settings-sub">Qaysi kanallar orqali xabar yuborilsin</div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#0088cc,#005a8d)"><i data-lucide="send"></i></div>
+                <div style="flex:1"><div class="settings-card-title">Telegram Bot <span class="connection-pill conn-active" style="margin-left:8px"><span class="live-dot" style="width:5px;height:5px"></span>Ulangan</span></div><div class="settings-card-desc">@SergakAI_Bot · 4 ta chat ulangan</div></div>
+                <div class="toggle-switch on"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Bot Token</label><input class="form-input" value="6234*****:AAH-***********" type="password" style="font-family:'JetBrains Mono',monospace;font-size:11px"></div>
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Standart chat ID</label><input class="form-input" value="-1001234567890" style="font-family:'JetBrains Mono',monospace;font-size:11px"></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#25d366,#128c7e)"><i data-lucide="message-circle"></i></div>
+                <div style="flex:1"><div class="settings-card-title">WhatsApp Business <span class="connection-pill conn-inactive" style="margin-left:8px">O'chirilgan</span></div><div class="settings-card-desc">Twilio yoki Meta orqali</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i data-lucide="phone"></i></div>
+                <div style="flex:1"><div class="settings-card-title">SMS gateway <span class="connection-pill conn-active" style="margin-left:8px"><span class="live-dot" style="width:5px;height:5px"></span>Eskiz.uz</span></div><div class="settings-card-desc">Faqat kritik alertlar uchun</div></div>
+                <div class="toggle-switch on"></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><i data-lucide="mail"></i></div>
+                <div style="flex:1"><div class="settings-card-title">Email <span class="connection-pill conn-active" style="margin-left:8px"><span class="live-dot" style="width:5px;height:5px"></span>SMTP ulangan</span></div><div class="settings-card-desc">Hisobotlar va kunlik xulosalar</div></div>
+                <div class="toggle-switch on"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="sg-integ">
+            <div class="settings-h">Integratsiyalar</div>
+            <div class="settings-sub">Tashqi tizimlar bilan ulanish</div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i data-lucide="users"></i></div>
+              <div style="flex:1"><div class="settings-card-title">HR / 1C tizimi</div><div class="settings-card-desc">Ishchi ro'yxati va smena jadvali sinxronizatsiyasi</div></div>
+              <button class="btn btn-secondary"><i data-lucide="link"></i>Ulanish</button>
+            </div></div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:linear-gradient(135deg,#f97316,#ea580c)"><i data-lucide="cpu"></i></div>
+              <div style="flex:1"><div class="settings-card-title">PLC / Modbus</div><div class="settings-card-desc">Sanoat boshqaruv tizimi — kritik alertlarda avtomatik to'xtatish</div></div>
+              <button class="btn btn-secondary"><i data-lucide="link"></i>Ulanish</button>
+            </div></div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2)"><i data-lucide="webhook"></i></div>
+              <div style="flex:1"><div class="settings-card-title">Webhook API <span class="connection-pill conn-active" style="margin-left:8px"><span class="live-dot" style="width:5px;height:5px"></span>2 ta faol</span></div><div class="settings-card-desc">Slack, Discord, Teams</div></div>
+              <button class="btn btn-secondary"><i data-lucide="settings"></i>Boshqarish</button>
+            </div></div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i data-lucide="key"></i></div>
+              <div style="flex:1"><div class="settings-card-title">REST API</div><div class="settings-card-desc">Tashqi tizimlardan kirish</div></div>
+              <button class="btn btn-secondary"><i data-lucide="key"></i>API Key yaratish</button>
+            </div></div>
+          </div>
+
+          <div class="settings-section" id="sg-ai">
+            <div class="settings-h">AI & Performance</div>
+            <div class="settings-sub">Model va inference sozlamalari</div>
+            <div class="settings-card">
+              <div class="settings-card-h"><div class="settings-card-icon"><i data-lucide="zap"></i></div><div><div class="settings-card-title">Inference rejimi</div><div class="settings-card-desc">Tezlik vs aniqlik balansi</div></div></div>
+              <select class="form-select"><option>FP16 (Half) — TensorRT — eng tez</option><option>FP32 (Full) — eng aniq</option><option>INT8 (Quantized) — ultra tez</option></select>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-h"><div class="settings-card-icon" style="background:var(--gradient-warning)"><i data-lucide="gauge"></i></div><div><div class="settings-card-title">Frame skip</div><div class="settings-card-desc">GPU yukini kamaytirish</div></div></div>
+              <div class="threshold-slider" style="margin-top:0">
+                <div class="slider-row"><div class="slider-label">Tahlil intervali</div><span class="slider-value">Har 2-kadr</span></div>
+                <input type="range" min="1" max="5" value="2">
+                <div class="form-hint">Tavsiya: 2 (xavfsizlik uchun yetarli, GPU 50% tejaydi)</div>
+              </div>
+            </div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:var(--gradient-success)"><i data-lucide="layers"></i></div>
+              <div><div class="settings-card-title">Motion-triggered AI</div><div class="settings-card-desc">Bo'sh kadrda model ishlamaydi — GPU 70% tejaydi</div></div>
+              <div class="toggle-switch on" style="margin-left:auto"></div>
+            </div></div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i data-lucide="git-branch"></i></div>
+              <div><div class="settings-card-title">Active learning</div><div class="settings-card-desc">False positive'lar avtomatik to'planib model qayta o'qitiladi</div></div>
+              <div class="toggle-switch on" style="margin-left:auto"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;font-family:'JetBrains Mono',monospace">false_positives/ — 437 ta yig'ilgan · 1000 ta da retraining</div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="sg-storage">
+            <div class="settings-h">Saqlash siyosati</div>
+            <div class="settings-card">
+              <div class="settings-card-h">
+                <div class="settings-card-icon"><i data-lucide="hard-drive"></i></div>
+                <div style="flex:1"><div class="settings-card-title">Disk holati</div><div class="settings-card-desc">Samsung 1TB NVMe SSD</div></div>
+                <div style="text-align:right"><div style="font-weight:700;font-size:14px;color:var(--text)">487 / 1000 GB</div><div style="font-size:11px;color:var(--text-muted)">48.7%</div></div>
+              </div>
+              <div style="height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden;margin-top:10px">
+                <div style="height:100%;width:48.7%;background:var(--gradient-primary)"></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-h"><div class="settings-card-icon" style="background:var(--gradient-warning)"><i data-lucide="archive"></i></div><div><div class="settings-card-title">Saqlash muddati</div><div class="settings-card-desc">Avtomatik o'chirish</div></div></div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Screenshot</label><select class="form-select"><option>30 kun</option><option>60 kun</option><option>90 kun</option><option>1 yil</option></select></div>
+                <div class="form-group" style="margin-bottom:0"><label class="form-label">Video kliplar</label><select class="form-select"><option>14 kun</option><option>30 kun</option><option>60 kun</option></select></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="sg-security">
+            <div class="settings-h">Xavfsizlik</div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c)"><i data-lucide="shield-check"></i></div>
+              <div style="flex:1"><div class="settings-card-title">2FA — Ikki faktorli</div><div class="settings-card-desc">SMS yoki TOTP</div></div>
+              <div class="toggle-switch on"></div>
+            </div></div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon"><i data-lucide="key-round"></i></div>
+              <div style="flex:1"><div class="settings-card-title">SSO — Single Sign-On</div><div class="settings-card-desc">Microsoft, Google, AD</div></div>
+              <button class="btn btn-secondary"><i data-lucide="settings"></i>Sozlash</button>
+            </div></div>
+            <div class="settings-card"><div class="settings-card-h">
+              <div class="settings-card-icon" style="background:var(--gradient-warning)"><i data-lucide="file-text"></i></div>
+              <div style="flex:1"><div class="settings-card-title">Audit log</div><div class="settings-card-desc">Kim qachon nimani o'zgartirgani</div></div>
+              <div class="toggle-switch on"></div>
+            </div></div>
+          </div>
+
+          <div class="settings-section" id="sg-appearance">
+            <div class="settings-h">Ko'rinish</div>
+            <div class="settings-card">
+              <div class="settings-card-title" style="margin-bottom:14px">Tema</div>
+              <div class="theme-grid">
+                <div class="theme-card active"><div class="theme-preview" style="background:linear-gradient(135deg,#0a0e1a,#131a2c);border:1px solid var(--border)"></div><div class="theme-name">Qorong'i (Standart)</div></div>
+                <div class="theme-card"><div class="theme-preview" style="background:linear-gradient(135deg,#f8fafc,#e2e8f0);border:1px solid #cbd5e1"></div><div class="theme-name">Yorug'</div></div>
+                <div class="theme-card"><div class="theme-preview" style="background:linear-gradient(135deg,#1c1917,#0c0a09);border:1px solid #44403c"></div><div class="theme-name">Tun (OLED)</div></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-card-title" style="margin-bottom:14px">Aksent rangi</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <div style="width:36px;height:36px;border-radius:50%;background:#3b82f6;cursor:pointer;border:3px solid var(--text)"></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#06b6d4;cursor:pointer"></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#10b981;cursor:pointer"></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#8b5cf6;cursor:pointer"></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#ec4899;cursor:pointer"></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#f59e0b;cursor:pointer"></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#ef4444;cursor:pointer"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="sg-about">
+            <div class="settings-h">Tizim haqida</div>
+            <div class="settings-card">
+              <div style="display:flex;gap:18px;align-items:center;margin-bottom:14px">
+                <div style="width:60px;height:60px;border-radius:14px;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-glow)"><i data-lucide="shield-check" style="width:30px;height:30px;color:#fff"></i></div>
+                <div>
+                  <div style="font-size:18px;font-weight:800;color:var(--text)">SERGAK AI</div>
+                  <div style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">v2.1.4 · build 20260509</div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+                <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Hardware</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:3px">NVIDIA Jetson Orin NX 16GB</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">CPU/GPU yuklanishi</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:3px">42% / 67%</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">RAM</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:3px">8.4 / 16 GB</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Uptime</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:3px">14 kun, 6 soat</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Python</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:3px">3.10.12</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">JetPack</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:3px">5.1.2</div></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-secondary"><i data-lucide="download"></i>Yangilanishni tekshirish</button>
+              <button class="btn btn-secondary"><i data-lucide="file-text"></i>Litsenziya</button>
+              <button class="btn btn-secondary"><i data-lucide="life-buoy"></i>Yordam</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  SergakApp.mountShell('settings');
+  function switchSettings(item, id){
+    document.querySelectorAll('.settings-nav-item').forEach(x=>x.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.settings-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    lucide.createIcons();
+  }
+  lucide.createIcons();
+</script>
+</body>
+</html>

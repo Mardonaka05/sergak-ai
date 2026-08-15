@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Zavod xaritasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <div class="cameras-toolbar" style="margin-bottom:16px">
+        <div class="toolbar-filter"><i data-lucide="layers"></i><select><option>Hamma qatlamlar</option><option>Faqat kameralar</option><option>Faqat ishchilar</option><option>Heatmap</option></select></div>
+        <div class="toolbar-filter"><i data-lucide="building"></i><select><option>1-bino (asosiy)</option><option>2-bino (ombor)</option></select></div>
+        <button class="btn btn-secondary" style="margin-left:auto"><i data-lucide="upload"></i>Plan yuklash</button>
+        <button class="btn btn-primary"><i data-lucide="maximize-2"></i>To'liq ekran</button>
+      </div>
+
+      <div class="floorplan-wrap">
+        <svg class="floorplan-svg" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="fpGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(141,155,184,.07)" stroke-width="1"/>
+            </pattern>
+            <radialGradient id="fpHeatRed"><stop offset="0%" stop-color="rgba(239,68,68,.4)"/><stop offset="100%" stop-color="rgba(239,68,68,0)"/></radialGradient>
+            <radialGradient id="fpHeatYellow"><stop offset="0%" stop-color="rgba(245,158,11,.3)"/><stop offset="100%" stop-color="rgba(245,158,11,0)"/></radialGradient>
+            <radialGradient id="fpCamGlow"><stop offset="0%" stop-color="rgba(59,130,246,.6)"/><stop offset="100%" stop-color="rgba(59,130,246,0)"/></radialGradient>
+          </defs>
+          <rect width="1200" height="600" fill="url(#fpGrid)"/>
+          <g class="fp-zone">
+            <rect x="40" y="40" width="380" height="240" rx="8" fill="rgba(239,68,68,.08)" stroke="rgba(239,68,68,.4)" stroke-width="2"/>
+            <text x="60" y="70" fill="#ff8585" font-size="14" font-weight="700">ERITISH BO'LIMI</text>
+            <text x="60" y="90" fill="#8d9bb8" font-size="11">3 kamera · 15 ishchi</text>
+            <rect x="80" y="120" width="60" height="60" rx="4" fill="rgba(239,68,68,.25)" stroke="#ef4444"/><text x="110" y="155" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">Pech-1</text>
+            <rect x="170" y="120" width="60" height="60" rx="4" fill="rgba(239,68,68,.25)" stroke="#ef4444"/><text x="200" y="155" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">Pech-2</text>
+            <rect x="260" y="120" width="60" height="60" rx="4" fill="rgba(239,68,68,.25)" stroke="#ef4444"/><text x="290" y="155" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">Pech-3</text>
+            <circle cx="200" cy="180" r="80" fill="url(#fpHeatRed)"/>
+          </g>
+          <g class="fp-zone">
+            <rect x="440" y="40" width="320" height="240" rx="8" fill="rgba(249,115,22,.08)" stroke="rgba(249,115,22,.4)" stroke-width="2"/>
+            <text x="460" y="70" fill="#ffaa66" font-size="14" font-weight="700">PECHKAXONA</text>
+            <text x="460" y="90" fill="#8d9bb8" font-size="11">4 kamera · 12 ishchi</text>
+            <rect x="480" y="120" width="240" height="100" rx="4" fill="rgba(249,115,22,.15)" stroke="rgba(249,115,22,.5)" stroke-dasharray="4,4"/>
+            <text x="600" y="170" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">Asosiy zal</text>
+            <circle cx="600" cy="170" r="60" fill="url(#fpHeatYellow)"/>
+          </g>
+          <g class="fp-zone">
+            <rect x="780" y="40" width="380" height="160" rx="8" fill="rgba(236,72,153,.08)" stroke="rgba(236,72,153,.4)" stroke-width="2"/>
+            <text x="800" y="70" fill="#ff89c4" font-size="14" font-weight="700">QUYISH BO'LIMI</text>
+            <text x="800" y="90" fill="#8d9bb8" font-size="11">2 kamera · 6 ishchi</text>
+            <path d="M 820 130 L 1140 130 L 1140 180 L 820 180 Z" fill="rgba(236,72,153,.15)" stroke="rgba(236,72,153,.4)"/>
+            <text x="980" y="160" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">Quyish kanali</text>
+          </g>
+          <g class="fp-zone">
+            <rect x="780" y="220" width="380" height="160" rx="8" fill="rgba(139,92,246,.08)" stroke="rgba(139,92,246,.4)" stroke-width="2"/>
+            <text x="800" y="250" fill="#b599ff" font-size="14" font-weight="700">MEXANIK USTAXONA</text>
+            <text x="800" y="270" fill="#8d9bb8" font-size="11">2 kamera · 5 ishchi</text>
+          </g>
+          <g class="fp-zone">
+            <rect x="40" y="320" width="430" height="240" rx="8" fill="rgba(59,130,246,.08)" stroke="rgba(59,130,246,.4)" stroke-width="2"/>
+            <text x="60" y="350" fill="#7eb6ff" font-size="14" font-weight="700">OMBOR</text>
+            <text x="60" y="370" fill="#8d9bb8" font-size="11">2 kamera · 8 ishchi</text>
+            <rect x="80" y="400" width="40" height="140" fill="rgba(59,130,246,.2)"/><rect x="140" y="400" width="40" height="140" fill="rgba(59,130,246,.2)"/>
+            <rect x="200" y="400" width="40" height="140" fill="rgba(59,130,246,.2)"/><rect x="260" y="400" width="40" height="140" fill="rgba(59,130,246,.2)"/>
+            <rect x="320" y="400" width="40" height="140" fill="rgba(59,130,246,.2)"/><rect x="380" y="400" width="40" height="140" fill="rgba(59,130,246,.2)"/>
+          </g>
+          <g class="fp-zone">
+            <rect x="490" y="320" width="270" height="240" rx="8" fill="rgba(16,185,129,.08)" stroke="rgba(16,185,129,.4)" stroke-width="2"/>
+            <text x="510" y="350" fill="#4adfa6" font-size="14" font-weight="700">OFIS</text>
+            <text x="510" y="370" fill="#8d9bb8" font-size="11">1 kamera · 6 xodim</text>
+            <rect x="510" y="400" width="100" height="60" rx="3" fill="rgba(16,185,129,.15)" stroke="rgba(16,185,129,.4)"/><text x="560" y="435" fill="#fff" font-size="9" text-anchor="middle">Boshqaruv</text>
+            <rect x="630" y="400" width="100" height="60" rx="3" fill="rgba(16,185,129,.15)" stroke="rgba(16,185,129,.4)"/><text x="680" y="435" fill="#fff" font-size="9" text-anchor="middle">Konferens</text>
+          </g>
+          <g class="fp-zone">
+            <rect x="780" y="400" width="380" height="160" rx="8" fill="rgba(6,182,212,.08)" stroke="rgba(6,182,212,.4)" stroke-width="2"/>
+            <text x="800" y="430" fill="#67e8f9" font-size="14" font-weight="700">TB XONASI</text>
+            <text x="800" y="450" fill="#8d9bb8" font-size="11">Sergak AI server · UPS · Router</text>
+            <rect x="820" y="470" width="80" height="70" rx="4" fill="rgba(6,182,212,.2)" stroke="#06b6d4"/><text x="860" y="510" fill="#fff" font-size="9" text-anchor="middle" font-weight="600">JETSON</text>
+            <rect x="920" y="470" width="60" height="70" rx="4" fill="rgba(6,182,212,.15)" stroke="rgba(6,182,212,.5)"/><text x="950" y="510" fill="#fff" font-size="9" text-anchor="middle">UPS</text>
+          </g>
+          <!-- Cameras -->
+          <g class="fp-camera"><circle cx="80" cy="80" r="20" fill="url(#fpCamGlow)"/><circle cx="80" cy="80" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="80" y="83" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">1</text></g>
+          <g class="fp-camera"><circle cx="380" cy="80" r="20" fill="url(#fpCamGlow)"/><circle cx="380" cy="80" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="380" y="83" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">2</text></g>
+          <g class="fp-camera"><circle cx="200" cy="240" r="20" fill="url(#fpCamGlow)"/><circle cx="200" cy="240" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="200" y="243" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">3</text></g>
+          <g class="fp-camera"><circle cx="480" cy="80" r="20" fill="url(#fpCamGlow)"/><circle cx="480" cy="80" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="480" y="83" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">4</text></g>
+          <g class="fp-camera"><circle cx="720" cy="80" r="20" fill="url(#fpCamGlow)"/><circle cx="720" cy="80" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="720" y="83" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">5</text></g>
+          <g class="fp-camera"><circle cx="480" cy="240" r="20" fill="url(#fpCamGlow)"/><circle cx="480" cy="240" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="480" y="243" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">6</text></g>
+          <g class="fp-camera"><circle cx="720" cy="240" r="20" fill="url(#fpCamGlow)"/><circle cx="720" cy="240" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="720" y="243" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">7</text></g>
+          <g class="fp-camera"><circle cx="820" cy="80" r="20" fill="url(#fpCamGlow)"/><circle cx="820" cy="80" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="820" y="83" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">8</text></g>
+          <g class="fp-camera"><circle cx="1120" cy="80" r="20" fill="url(#fpCamGlow)"/><circle cx="1120" cy="80" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="1120" y="83" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">9</text></g>
+          <g class="fp-camera"><circle cx="820" cy="260" r="20" fill="url(#fpCamGlow)"/><circle cx="820" cy="260" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="820" y="263" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">10</text></g>
+          <g class="fp-camera"><circle cx="1120" cy="260" r="20" fill="url(#fpCamGlow)"/><circle cx="1120" cy="260" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="1120" y="263" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">11</text></g>
+          <g class="fp-camera"><circle cx="80" cy="360" r="20" fill="url(#fpCamGlow)"/><circle cx="80" cy="360" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="80" y="363" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">12</text></g>
+          <g class="fp-camera"><circle cx="430" cy="540" r="20" fill="url(#fpCamGlow)"/><circle cx="430" cy="540" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="430" y="543" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">13</text></g>
+          <g class="fp-camera"><circle cx="630" cy="360" r="20" fill="url(#fpCamGlow)"/><circle cx="630" cy="360" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/><text x="630" y="363" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">14</text></g>
+          <!-- Workers -->
+          <g class="fp-worker"><circle cx="120" cy="200" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="220" cy="210" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="300" cy="220" r="6" fill="#ef4444" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="350" cy="160" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="180" cy="240" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="540" cy="180" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="620" cy="200" r="6" fill="#ef4444" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="680" cy="170" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="700" cy="240" r="6" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="900" cy="170" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="1050" cy="160" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="950" cy="320" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="1080" cy="340" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="160" cy="490" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="280" cy="500" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="370" cy="510" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="560" cy="430" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+          <g class="fp-worker"><circle cx="680" cy="430" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/></g>
+        </svg>
+        <div class="fp-stats-overlay">
+          <div class="fp-stat-pill"><i data-lucide="users" style="color:var(--success)"></i>47 ishchi</div>
+          <div class="fp-stat-pill"><i data-lucide="camera" style="color:var(--primary)"></i>14 kamera</div>
+          <div class="fp-stat-pill"><i data-lucide="alert-triangle" style="color:var(--danger)"></i>3 alert</div>
+        </div>
+        <div class="fp-legend">
+          <div class="fp-legend-title">Belgilar</div>
+          <div class="fp-legend-item"><span class="fp-legend-dot" style="background:#10b981;box-shadow:0 0 6px #10b981"></span>Ishchi (OK)</div>
+          <div class="fp-legend-item"><span class="fp-legend-dot" style="background:#f59e0b;box-shadow:0 0 6px #f59e0b"></span>Ogohlantirish</div>
+          <div class="fp-legend-item"><span class="fp-legend-dot" style="background:#ef4444;box-shadow:0 0 6px #ef4444"></span>Qoidabuzar</div>
+          <div class="fp-legend-item"><span class="fp-legend-dot" style="background:#3b82f6;box-shadow:0 0 6px #3b82f6"></span>Kamera</div>
+          <div style="border-top:1px solid var(--border);margin:10px 0"></div>
+          <div class="fp-legend-item"><div style="width:18px;height:18px;border-radius:4px;background:radial-gradient(circle,rgba(239,68,68,.5),transparent)"></div>Issiq zona</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>SergakApp.mountShell('floorplan');lucide.createIcons();</script>
+</body>
+</html>

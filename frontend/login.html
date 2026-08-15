@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI - Tizimga kirish</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+.login-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(ellipse at top left,#1a2240 0%,var(--bg) 50%),radial-gradient(ellipse at bottom right,#10182e 0%,var(--bg) 60%);}
+.login-bg::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,130,246,.25),transparent 70%);top:-100px;left:-100px;pointer-events:none}
+.login-bg::after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(6,182,212,.15),transparent 70%);bottom:-200px;right:-100px;pointer-events:none}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;z-index:1}
+.login-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}
+.login-logo{width:60px;height:60px;border-radius:14px;background:var(--gradient-primary);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px var(--primary-glow);margin-bottom:12px}
+.login-logo i{width:30px;height:30px;color:#fff;stroke-width:2.5}
+.login-title{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text);margin-bottom:4px}
+.login-subtitle{font-size:13px;color:var(--text-muted);text-align:center}
+
+.google-btn-wrap{margin-bottom:18px}
+#googleBtn{display:flex;justify-content:center}
+
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--text-dim);font-size:11px;font-weight:600;letter-spacing:1px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.login-form .form-group{margin-bottom:14px}
+.login-form .form-input{font-size:14px;padding:11px 14px}
+.login-form .btn{width:100%;justify-content:center;padding:12px 16px;font-size:14px}
+.login-tabs{display:flex;background:var(--surface-2);border-radius:10px;padding:3px;margin-bottom:18px}
+.login-tab{flex:1;padding:9px;border:none;background:none;color:var(--text-muted);font-weight:600;
+  font-size:12px;border-radius:7px;cursor:pointer;font-family:inherit;transition:all .15s}
+.login-tab.active{background:var(--surface-3);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.login-pane{display:none}
+.login-pane.active{display:block;animation:fadeIn .2s}
+.code-inputs{display:flex;gap:8px;justify-content:center;margin:8px 0 16px 0}
+.code-inputs input{width:42px;height:50px;text-align:center;font-size:22px;font-weight:700;
+  background:var(--surface);border:2px solid var(--border);border-radius:10px;color:var(--text);
+  font-family:'JetBrains Mono',monospace;outline:none;transition:all .15s}
+.code-inputs input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+.code-inputs input.filled{border-color:var(--success);background:rgba(16,185,129,.05)}
+.email-step,.code-step{display:none}
+.email-step.active,.code-step.active{display:block;animation:fadeIn .2s}
+.back-btn{background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;padding:4px 0;font-family:inherit;margin-bottom:10px}
+.back-btn:hover{color:var(--text)}
+.back-btn i{width:14px;height:14px}
+.info-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;
+  padding:11px 13px;font-size:12px;color:var(--text);margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.info-box.success{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2)}
+.info-box.error{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2)}
+.info-box.warn{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
+.info-box i{width:16px;height:16px;flex-shrink:0;color:var(--primary)}
+.info-box.success i{color:var(--success)}
+.info-box.error i{color:var(--danger)}
+.info-box.warn i{color:var(--warning)}
+.email-display{font-family:'JetBrains Mono',monospace;color:var(--primary);font-weight:600}
+.resend-link{color:var(--primary);font-size:12px;cursor:pointer;text-decoration:none;text-align:center;
+  display:block;margin-top:8px}
+.resend-link.disabled{color:var(--text-dim);cursor:default}
+
+.demo-code-box{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(239,68,68,.08));
+  border:2px solid rgba(245,158,11,.4);border-radius:12px;padding:16px;margin-top:14px;text-align:center;
+  animation:pulseGlow 2s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 0 8px rgba(245,158,11,0)}}
+.demo-code-label{font-size:10px;font-weight:700;color:var(--warning);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:5px}
+.demo-code-label i{width:13px;height:13px}
+.demo-code-value{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:800;color:#ffaa66;letter-spacing:6px;margin-bottom:6px;cursor:pointer;user-select:all}
+.demo-code-hint{font-size:10px;color:var(--text-muted);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="login-bg">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo"><i data-lucide="shield-check"></i></div>
+      <div class="login-title">SERGAK AI</div>
+      <div class="login-subtitle">Sanoat xavfsizlik tizimi</div>
+    </div>
+
+    <!-- Google Sign-In -->
+    <div class="google-btn-wrap" id="googleWrap" style="display:none">
+      <div id="googleBtn"></div>
+    </div>
+    <div class="divider" id="divider" style="display:none">YOKI</div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('otp')"><i data-lucide="mail" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:5px"></i>Email kod</button>
+      <button class="login-tab" onclick="switchTab('password')"><i data-lucide="key" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:5px"></i>Parol</button>
+    </div>
+
+    <!-- OTP login pane -->
+    <div class="login-pane active" id="pane-otp">
+      <div class="email-step active" id="emailStep">
+        <div class="form-group">
+          <label class="form-label">Email manzilingiz</label>
+          <input class="form-input" type="email" id="otpEmail" placeholder="email@example.com" autocomplete="email">
+        </div>
+        <button class="btn btn-primary" onclick="requestCode()" id="requestBtn">
+          <i data-lucide="send"></i>Kod yuborish
+        </button>
+        <div class="info-box" style="margin-top:12px">
+          <i data-lucide="info"></i>
+          <div>Emailingizga 6-xonali kod yuboriladi. 10 daqiqa amal qiladi.</div>
+        </div>
+        <div id="otpError" style="display:none"></div>
+      </div>
+
+      <div class="code-step" id="codeStep">
+        <button class="back-btn" onclick="backToEmail()"><i data-lucide="arrow-left"></i>Boshqa email</button>
+        <div class="info-box success">
+          <i data-lucide="mail-check"></i>
+          <div>Kod yuborildi: <span class="email-display" id="sentToEmail"></span></div>
+        </div>
+
+        <!-- DEMO MODE: show code right here -->
+        <div id="demoCodeBox" style="display:none"></div>
+
+        <label class="form-label" style="text-align:center;margin-bottom:6px;display:block">6-xonali kodni kiriting</label>
+        <div class="code-inputs" id="codeInputs">
+          <input maxlength="1" inputmode="numeric" pattern="\d">
+          <input maxlength="1" inputmode="numeric" pattern="\d">
+          <input maxlength="1" inputmode="numeric" pattern="\d">
+          <input maxlength="1" inputmode="numeric" pattern="\d">
+          <input maxlength="1" inputmode="numeric" pattern="\d">
+          <input maxlength="1" inputmode="numeric" pattern="\d">
+        </div>
+        <button class="btn btn-primary" onclick="verifyCode()" id="verifyBtn">
+          <i data-lucide="log-in"></i>Tizimga kirish
+        </button>
+        <a class="resend-link" id="resendLink" onclick="resendCode()">Kodni qaytadan yuborish</a>
+        <div id="verifyError" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Password login pane -->
+    <div class="login-pane" id="pane-password">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="pwEmail" placeholder="email@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Parol</label>
+        <input class="form-input" type="password" id="pwPass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" onclick="loginPassword()" id="pwBtn">
+        <i data-lucide="log-in"></i>Kirish
+      </button>
+      <div id="pwError" style="display:none;margin-top:14px"></div>
+    </div>
+
+    <div style="margin-top:18px;padding:14px;background:var(--surface-2);border-radius:10px;text-align:center">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Tizimda akkauntingiz yo'qmi?</div>
+      <a href="register.html" style="color:var(--primary);font-weight:600;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+        <i data-lucide="user-plus" style="width:14px;height:14px"></i>Ro'yxatdan o'tish so'rovi yuborish
+      </a>
+    </div>
+
+    <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--text-dim)">
+      Sergak AI v2.1.4 &middot; &copy; 2026
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/auth.js"></script>
+<script>
+if (SergakAuth.isAuthenticated()) {
+  window.location.href = 'index.html';
+}
+
+let pendingEmail = '';
+let resendCooldown = 0;
+let authConfig = {};
+
+// Load auth config (Google client ID, SMTP status)
+fetch('/api/auth/config').then(r => r.json()).then(cfg => {
+  authConfig = cfg;
+  if (cfg.google_client_id) {
+    initGoogleButton(cfg.google_client_id);
+  }
+}).catch(()=>{});
+
+function initGoogleButton(clientId) {
+  const tryInit = () => {
+    if (typeof google === 'undefined' || !google.accounts) {
+      setTimeout(tryInit, 200);
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleSignIn,
+      auto_select: false,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('googleBtn'),
+      {theme: 'filled_blue', size: 'large', type: 'standard', width: 340, text: 'signin_with', shape: 'rectangular'}
+    );
+    document.getElementById('googleWrap').style.display = 'block';
+    document.getElementById('divider').style.display = 'flex';
+  };
+  tryInit();
+}
+
+async function handleGoogleSignIn(response) {
+  try {
+    const r = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({credential: response.credential}),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showError('otpError', data.detail || 'Google login xato');
+      return;
+    }
+    SergakAuth.setSession(data.access_token, data.user);
+    window.location.href = 'index.html';
+  } catch (e) {
+    showError('otpError', "Tarmoq xatosi");
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.login-pane').forEach(p => p.classList.remove('active'));
+  event.target.closest('.login-tab').classList.add('active');
+  document.getElementById('pane-' + tab).classList.add('active');
+  lucide.createIcons();
+}
+
+function showError(elId, msg) {
+  const el = document.getElementById(elId);
+  el.style.display = 'block';
+  el.innerHTML = `<div class="info-box error" style="margin-top:12px"><i data-lucide="alert-circle"></i><div>${msg}</div></div>`;
+  lucide.createIcons();
+}
+function hideError(elId) {
+  document.getElementById(elId).style.display = 'none';
+}
+
+async function requestCode() {
+  hideError('otpError');
+  const email = document.getElementById('otpEmail').value.trim();
+  if (!email || !email.includes('@')) {
+    showError('otpError', "Email manzilini to'g'ri kiriting");
+    return;
+  }
+  const btn = document.getElementById('requestBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i>Yuborilmoqda...';
+  lucide.createIcons();
+  try {
+    const r = await fetch('/api/auth/request-code', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email}),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showError('otpError', data.detail || 'Xato');
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="send"></i>Kod yuborish';
+      lucide.createIcons();
+      return;
+    }
+    pendingEmail = email;
+    document.getElementById('emailStep').classList.remove('active');
+    document.getElementById('codeStep').classList.add('active');
+    document.getElementById('sentToEmail').textContent = email;
+    document.querySelector('#codeInputs input').focus();
+
+    // Show demo code on screen if SMTP not configured
+    if (data.demo_mode && data.demo_code) {
+      const box = document.getElementById('demoCodeBox');
+      box.style.display = 'block';
+      box.innerHTML = `
+        <div class="demo-code-box">
+          <div class="demo-code-label"><i data-lucide="zap"></i>DEMO REJIM - Sizning kodingiz</div>
+          <div class="demo-code-value" onclick="autoFillCode('${data.demo_code}')">${data.demo_code}</div>
+          <div class="demo-code-hint">Kodni bosing - avtomatik kiritiladi. Haqiqiy emailga yuborilishi uchun .env faylida SMTP ni sozlang.</div>
+        </div>`;
+      lucide.createIcons();
+    }
+    startResendCooldown();
+  } catch (e) {
+    showError('otpError', "Server bilan aloqa yo'q");
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="send"></i>Kod yuborish';
+    lucide.createIcons();
+  }
+}
+
+function autoFillCode(code) {
+  const inputs = document.querySelectorAll('#codeInputs input');
+  for (let i = 0; i < 6; i++) {
+    inputs[i].value = code[i];
+    inputs[i].classList.add('filled');
+  }
+  setTimeout(verifyCode, 200);
+}
+
+async function verifyCode() {
+  hideError('verifyError');
+  const inputs = document.querySelectorAll('#codeInputs input');
+  const code = Array.from(inputs).map(i => i.value).join('');
+  if (code.length !== 6) {
+    showError('verifyError', "6-xonali kodni to'liq kiriting");
+    return;
+  }
+  const btn = document.getElementById('verifyBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i>Tekshirilmoqda...';
+  lucide.createIcons();
+  try {
+    const r = await fetch('/api/auth/verify-code', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: pendingEmail, code}),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showError('verifyError', data.detail || "Noto'g'ri kod");
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="log-in"></i>Tizimga kirish';
+      lucide.createIcons();
+      inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+      inputs[0].focus();
+      return;
+    }
+    SergakAuth.setSession(data.access_token, data.user);
+    btn.innerHTML = '<i data-lucide="check"></i>Muvaffaqiyatli!';
+    lucide.createIcons();
+    setTimeout(() => window.location.href = 'index.html', 400);
+  } catch (e) {
+    showError('verifyError', "Server bilan aloqa yo'q");
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="log-in"></i>Tizimga kirish';
+    lucide.createIcons();
+  }
+}
+
+async function loginPassword() {
+  hideError('pwError');
+  const email = document.getElementById('pwEmail').value.trim();
+  const password = document.getElementById('pwPass').value;
+  if (!email || !password) {
+    showError('pwError', "Email va parolni kiriting");
+    return;
+  }
+  const btn = document.getElementById('pwBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i>Kirilyapti...';
+  lucide.createIcons();
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password}),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showError('pwError', data.detail || "Email yoki parol noto'g'ri");
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="log-in"></i>Kirish';
+      lucide.createIcons();
+      return;
+    }
+    SergakAuth.setSession(data.access_token, data.user);
+    btn.innerHTML = '<i data-lucide="check"></i>Muvaffaqiyatli!';
+    lucide.createIcons();
+    setTimeout(() => window.location.href = 'index.html', 400);
+  } catch (e) {
+    showError('pwError', "Server bilan aloqa yo'q");
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="log-in"></i>Kirish';
+    lucide.createIcons();
+  }
+}
+
+function backToEmail() {
+  document.getElementById('codeStep').classList.remove('active');
+  document.getElementById('emailStep').classList.add('active');
+  document.getElementById('demoCodeBox').style.display = 'none';
+  document.querySelectorAll('#codeInputs input').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+  hideError('verifyError');
+}
+
+function resendCode() {
+  if (resendCooldown > 0) return;
+  document.getElementById('otpEmail').value = pendingEmail;
+  requestCode();
+}
+
+function startResendCooldown() {
+  resendCooldown = 30;
+  const link = document.getElementById('resendLink');
+  const tick = () => {
+    if (resendCooldown > 0) {
+      link.textContent = `Qaytadan yuborish (${resendCooldown}s)`;
+      link.classList.add('disabled');
+      resendCooldown--;
+      setTimeout(tick, 1000);
+    } else {
+      link.textContent = 'Kodni qaytadan yuborish';
+      link.classList.remove('disabled');
+    }
+  };
+  tick();
+}
+
+document.querySelectorAll('#codeInputs input').forEach((input, idx, all) => {
+  input.addEventListener('input', e => {
+    const v = e.target.value.replace(/\D/g, '');
+    e.target.value = v;
+    if (v) {
+      e.target.classList.add('filled');
+      if (idx < all.length - 1) all[idx + 1].focus();
+      else verifyCode();
+    } else {
+      e.target.classList.remove('filled');
+    }
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !e.target.value && idx > 0) all[idx - 1].focus();
+  });
+  input.addEventListener('paste', e => {
+    e.preventDefault();
+    const txt = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+    for (let i = 0; i < txt.length && i < all.length; i++) {
+      all[i].value = txt[i];
+      all[i].classList.add('filled');
+    }
+    if (txt.length === 6) verifyCode();
+    else if (txt.length < all.length) all[txt.length].focus();
+  });
+});
+
+document.getElementById('otpEmail').addEventListener('keydown', e => { if (e.key === 'Enter') requestCode(); });
+document.getElementById('pwPass').addEventListener('keydown', e => { if (e.key === 'Enter') loginPassword(); });
+
+lucide.createIcons();
+</script>
+</body>
+</html>

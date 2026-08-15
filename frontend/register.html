@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI - Ro'yxatdan o'tish</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+.reg-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;
+  background:radial-gradient(ellipse at top left,#1a2240 0%,var(--bg) 50%),radial-gradient(ellipse at bottom right,#10182e 0%,var(--bg) 60%);}
+.reg-bg::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,130,246,.25),transparent 70%);top:-100px;left:-100px;pointer-events:none}
+.reg-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:36px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;z-index:1;margin:30px 0}
+.reg-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:20px}
+.reg-logo{width:60px;height:60px;border-radius:14px;background:var(--gradient-primary);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px var(--primary-glow);margin-bottom:12px}
+.reg-logo i{width:30px;height:30px;color:#fff;stroke-width:2.5}
+.reg-title{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text);margin-bottom:4px}
+.reg-subtitle{font-size:13px;color:var(--text-muted);text-align:center}
+.form-group{margin-bottom:14px}
+.form-input,.form-select,.form-textarea{font-size:14px;padding:11px 14px;width:100%}
+.form-textarea{min-height:80px;resize:vertical;font-family:inherit}
+.btn-primary{width:100%;justify-content:center;padding:12px 16px;font-size:14px}
+.info-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;
+  padding:11px 13px;font-size:12px;color:var(--text);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box.success{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2)}
+.info-box.error{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2)}
+.info-box i{width:16px;height:16px;flex-shrink:0;color:var(--primary)}
+.info-box.success i{color:var(--success)}
+.info-box.error i{color:var(--danger)}
+.success-screen{display:none;text-align:center;padding:20px 0}
+.success-screen.active{display:block;animation:fadeIn .3s}
+.success-icon{width:80px;height:80px;border-radius:50%;background:rgba(16,185,129,.12);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.success-icon i{width:42px;height:42px;color:var(--success)}
+</style>
+</head>
+<body>
+<div class="reg-bg">
+  <div class="reg-card">
+    <div class="reg-brand">
+      <div class="reg-logo"><i data-lucide="user-plus"></i></div>
+      <div class="reg-title">RO'YXATDAN O'TISH</div>
+      <div class="reg-subtitle">Sergak AI tizimiga qo'shilish so'rovi</div>
+    </div>
+
+    <div id="formScreen">
+      <div class="info-box">
+        <i data-lucide="info"></i>
+        <div>So'rovingiz administratorga yuboriladi. Admin tekshirib chiqib, sizni tasdiqlaydi yoki rad etadi. Javob email orqali keladi.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">To'liq ismingiz *</label>
+        <input class="form-input" type="text" id="fullName" placeholder="Aliyev Aziz Akmalovich" autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email manzilingiz *</label>
+        <input class="form-input" type="email" id="email" placeholder="email@example.com" autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">So'ralayotgan rol *</label>
+        <select class="form-select" id="role">
+          <option value="operator">Operator - kameralarni kuzatish</option>
+          <option value="manager">Menejer - bo'lim boshqaruvchisi</option>
+          <option value="auditor">Auditor - hisobotlar tahlili</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Qisqacha sabab</label>
+        <textarea class="form-textarea" id="reason" placeholder="Masalan: 'Men 3-tsex menejeri, kameralarni kuzatib borishim kerak'"></textarea>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitRequest()" id="submitBtn">
+        <i data-lucide="send"></i>So'rov yuborish
+      </button>
+      <div id="errorBox" style="display:none;margin-top:12px"></div>
+
+      <div style="margin-top:18px;text-align:center;font-size:12px;color:var(--text-muted)">
+        Akkauntingiz bormi? <a href="login.html" style="color:var(--primary);font-weight:600;text-decoration:none">Tizimga kirish</a>
+      </div>
+    </div>
+
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon"><i data-lucide="check-circle"></i></div>
+      <h2 style="color:var(--text);margin-bottom:8px;font-size:20px">So'rov yuborildi!</h2>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:18px;line-height:1.6">
+        Sizning ro'yxatdan o'tish so'rovingiz administratorga yuborildi.
+        Admin javob bergach, sizga <b style="color:var(--text)" id="confirmEmail"></b> manziliga xabar keladi.
+      </p>
+      <a href="login.html" class="btn btn-secondary" style="width:100%;justify-content:center">
+        <i data-lucide="arrow-left"></i>Tizimga kirish sahifasiga
+      </a>
+    </div>
+
+    <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--text-dim)">
+      Sergak AI v2.1.4 &middot; &copy; 2026
+    </div>
+  </div>
+</div>
+
+<script>
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="info-box error"><i data-lucide="alert-circle"></i><div>${msg}</div></div>`;
+  lucide.createIcons();
+}
+function hideError() { document.getElementById('errorBox').style.display = 'none'; }
+
+async function submitRequest() {
+  hideError();
+  const fullName = document.getElementById('fullName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const role = document.getElementById('role').value;
+  const reason = document.getElementById('reason').value.trim();
+
+  if (!fullName || fullName.length < 3) { showError("To'liq ismingizni kiriting"); return; }
+  if (!email || !email.includes('@')) { showError("Email manzilingizni to'g'ri kiriting"); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i>Yuborilmoqda...';
+  lucide.createIcons();
+
+  try {
+    const r = await fetch('/api/auth/register-request', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, full_name: fullName, requested_role: role, reason}),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showError(data.detail || "Xato yuz berdi");
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="send"></i>So\'rov yuborish';
+      lucide.createIcons();
+      return;
+    }
+    document.getElementById('formScreen').style.display = 'none';
+    document.getElementById('successScreen').classList.add('active');
+    document.getElementById('confirmEmail').textContent = email;
+    lucide.createIcons();
+  } catch (e) {
+    showError("Server bilan aloqa yo'q");
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send"></i>So\'rov yuborish';
+    lucide.createIcons();
+  }
+}
+
+document.getElementById('email').addEventListener('keydown', e => { if (e.key === 'Enter') submitRequest(); });
+lucide.createIcons();
+</script>
+</body>
+</html>

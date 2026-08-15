@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Hisobotlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <div class="cameras-toolbar" style="margin-bottom:20px">
+        <div style="font-size:14px;color:var(--text-muted)">Tayyor shablonlardan birini tanlang</div>
+        <button class="btn btn-secondary" style="margin-left:auto"><i data-lucide="archive"></i>Arxiv</button>
+        <button class="btn btn-primary"><i data-lucide="file-plus-2"></i>Yangi shablon</button>
+      </div>
+
+      <div class="section-header"><div class="section-title"><i data-lucide="layout-template"></i>Shablonlar</div></div>
+      <div class="reports-grid">
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><i data-lucide="calendar-days"></i></div>
+          <div class="report-title">Kunlik hisobot</div>
+          <div class="report-desc">24 soatlik xulosa — barcha hodisalar, modullar, eng faol bo'limlar</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span><span class="format-tag format-xlsx">XLSX</span><span class="format-tag format-docx">DOCX</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i data-lucide="bar-chart-3"></i></div>
+          <div class="report-title">Haftalik tahlil</div>
+          <div class="report-desc">7 kunlik trendlar, taqqoslash, AI tushunchalar bilan</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span><span class="format-tag format-xlsx">XLSX</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i data-lucide="line-chart"></i></div>
+          <div class="report-title">Oylik executive</div>
+          <div class="report-desc">Direktor uchun bir varaqlik PDF — KPIlar va tavsiyalar</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c)"><i data-lucide="shield-check"></i></div>
+          <div class="report-title">Compliance audit</div>
+          <div class="report-desc">O'zbekiston Mehnat Kodeksi 211-modda asosida</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span><span class="format-tag format-docx">DOCX</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i data-lucide="award"></i></div>
+          <div class="report-title">ISO 45001 audit</div>
+          <div class="report-desc">Xalqaro xavfsizlik standarti hujjati</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span><span class="format-tag format-docx">DOCX</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#ec4899,#be185d)"><i data-lucide="users"></i></div>
+          <div class="report-title">Smena hisoboti</div>
+          <div class="report-desc">8 soatlik smena yakunida avtomatik</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span><span class="format-tag format-xlsx">XLSX</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template">
+          <div class="report-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2)"><i data-lucide="building-2"></i></div>
+          <div class="report-title">Bo'lim hisoboti</div>
+          <div class="report-desc">Tanlangan bo'lim bo'yicha batafsil</div>
+          <div class="report-formats"><span class="format-tag format-pdf">PDF</span><span class="format-tag format-xlsx">XLSX</span></div>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center"><i data-lucide="download"></i>Yaratish</button>
+        </div>
+        <div class="report-template" style="border:2px dashed var(--border);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 20px">
+          <div style="width:48px;height:48px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--text-muted);margin-bottom:14px"><i data-lucide="plus" style="width:22px;height:22px"></i></div>
+          <div class="report-title" style="color:var(--text-muted)">Maxsus shablon</div>
+          <div class="report-desc" style="margin-bottom:0">Drag & drop konstruktor</div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:24px">
+        <div class="section-title"><i data-lucide="repeat"></i>Avtomatik jadval</div>
+        <button class="btn btn-secondary"><i data-lucide="plus"></i>Yangi jadval</button>
+      </div>
+      <div class="events-table">
+        <div class="scheduled-row" style="background:var(--surface-2);font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase">
+          <div>HISOBOT</div><div>JADVAL</div><div>FORMAT</div><div>OLUVCHILAR</div><div></div>
+        </div>
+        <div class="scheduled-row">
+          <div class="sched-name"><div class="sched-name-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><i data-lucide="calendar-days" style="width:14px;height:14px;color:#fff"></i></div><div>Kunlik hisobot</div></div>
+          <div><div class="sched-cron">08:00 har kuni</div></div>
+          <div><span class="format-tag format-pdf">PDF</span></div>
+          <div style="font-size:12px;color:var(--text-muted)">3 ta email · 1 Telegram</div>
+          <div><div class="connection-pill conn-active"><span class="live-dot" style="width:5px;height:5px"></span>Faol</div></div>
+        </div>
+        <div class="scheduled-row">
+          <div class="sched-name"><div class="sched-name-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i data-lucide="bar-chart-3" style="width:14px;height:14px;color:#fff"></i></div><div>Haftalik tahlil</div></div>
+          <div><div class="sched-cron">Du · 09:00</div></div>
+          <div><span class="format-tag format-pdf">PDF</span> <span class="format-tag format-xlsx">XLSX</span></div>
+          <div style="font-size:12px;color:var(--text-muted)">5 ta email</div>
+          <div><div class="connection-pill conn-active"><span class="live-dot" style="width:5px;height:5px"></span>Faol</div></div>
+        </div>
+        <div class="scheduled-row">
+          <div class="sched-name"><div class="sched-name-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i data-lucide="line-chart" style="width:14px;height:14px;color:#fff"></i></div><div>Oylik executive</div></div>
+          <div><div class="sched-cron">Oyning 1-i</div></div>
+          <div><span class="format-tag format-pdf">PDF</span></div>
+          <div style="font-size:12px;color:var(--text-muted)">2 ta email</div>
+          <div><div class="connection-pill conn-active"><span class="live-dot" style="width:5px;height:5px"></span>Faol</div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>SergakApp.mountShell('reports');lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Analitika</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+
+      <div class="cameras-toolbar" style="margin-bottom:16px">
+        <div class="toolbar-filter"><i data-lucide="calendar"></i><select><option>Oxirgi 7 kun</option><option>Oxirgi 30 kun</option><option>Bu oy</option><option>Bu yil</option></select></div>
+        <div class="toolbar-filter"><i data-lucide="building-2"></i><select><option>Barcha bo'limlar</option></select></div>
+        <button class="btn btn-secondary" style="margin-left:auto"><i data-lucide="download"></i>Eksport</button>
+        <button class="btn btn-primary"><i data-lucide="sparkles"></i>AI Insights</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon"><i data-lucide="trending-up"></i></div><div class="stat-trend down"><i data-lucide="arrow-down"></i>18%</div></div>
+          <div class="stat-value">142</div><div class="stat-label">Bu hafta jami</div>
+          <div class="stat-detail">Oldingi haftaga nisbatan 31 ta kam</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon success"><i data-lucide="target"></i></div><div class="stat-trend up"><i data-lucide="arrow-up"></i>2.4%</div></div>
+          <div class="stat-value">96.4<span style="font-size:18px;color:var(--text-muted);font-weight:500">%</span></div>
+          <div class="stat-label">O'rtacha aniqlik</div>
+          <div class="stat-detail">Eng yuqori: Yong'in moduli — 98.2%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon warning"><i data-lucide="clock"></i></div><div class="stat-trend down"><i data-lucide="arrow-down"></i>8s</div></div>
+          <div class="stat-value">14<span style="font-size:18px;color:var(--text-muted);font-weight:500">s</span></div>
+          <div class="stat-label">O'rtacha javob vaqti</div>
+          <div class="stat-detail">Telegram + dashboard alert</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon danger"><i data-lucide="alert-octagon"></i></div><div class="stat-trend up"><i data-lucide="arrow-up"></i>3</div></div>
+          <div class="stat-value">12</div><div class="stat-label">Kritik hodisalar</div>
+          <div class="stat-detail">Yong'in (4) · Yiqilish (3) · Zona (5)</div>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-card span-8">
+          <div class="analytics-card-header">
+            <h3><i data-lucide="grid-3x3"></i>Issiqlik xaritasi — qoidabuzarlik vaqti</h3>
+            <div class="analytics-meta">Soat × kun (oxirgi 7 kun)</div>
+          </div>
+          <div class="heatmap-hour-labels" id="heatmapHours"></div>
+          <div class="heatmap" id="heatmapGrid"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:11px;color:var(--text-muted)">
+            <span>Eng kam</span>
+            <div style="display:flex;gap:2px">
+              <div style="width:14px;height:14px;background:#1a2238;border-radius:2px"></div>
+              <div style="width:14px;height:14px;background:rgba(59,130,246,.25);border-radius:2px"></div>
+              <div style="width:14px;height:14px;background:rgba(59,130,246,.5);border-radius:2px"></div>
+              <div style="width:14px;height:14px;background:rgba(239,68,68,.5);border-radius:2px"></div>
+              <div style="width:14px;height:14px;background:rgba(239,68,68,.85);border-radius:2px"></div>
+            </div>
+            <span>Eng ko'p</span>
+          </div>
+        </div>
+
+        <div class="analytics-card span-4">
+          <div class="analytics-card-header"><h3><i data-lucide="sparkles"></i>AI Tushunchalar</h3></div>
+          <div class="insight-card warning">
+            <div class="insight-icon"><i data-lucide="alert-triangle"></i></div>
+            <div class="insight-text">
+              <div class="insight-title">Seshanba 14:00–15:00</div>
+              <div class="insight-desc">Bu vaqtda kaska qoidabuzarliklari 3.2x ko'p — tushlik dam olishidan keyin charchoq.</div>
+              <span class="insight-tag">High Priority</span>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-icon"><i data-lucide="thermometer"></i></div>
+            <div class="insight-text">
+              <div class="insight-title">Eritish + 35°C</div>
+              <div class="insight-desc">Yuqori harorat kunlari yiqilish 40% ko'p.</div>
+              <span class="insight-tag">Warning</span>
+            </div>
+          </div>
+          <div class="insight-card success">
+            <div class="insight-icon"><i data-lucide="check-circle-2"></i></div>
+            <div class="insight-text">
+              <div class="insight-title">Pechkaxona — yaxshilanish</div>
+              <div class="insight-desc">Chekish moduli alertlari 60% kamaydi.</div>
+              <span class="insight-tag">Success</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-card span-6">
+          <div class="analytics-card-header"><h3><i data-lucide="activity"></i>Modul aniqlik tendensiyasi</h3><div class="analytics-meta">14 kun</div></div>
+          <div class="chart-container" style="height:240px"><canvas id="chartAccuracy"></canvas></div>
+        </div>
+
+        <div class="analytics-card span-6">
+          <div class="analytics-card-header"><h3><i data-lucide="radar"></i>Bo'limlar bo'yicha taqqoslash</h3></div>
+          <div class="chart-container" style="height:240px"><canvas id="chartRadar"></canvas></div>
+        </div>
+
+        <div class="analytics-card span-6">
+          <div class="analytics-card-header"><h3><i data-lucide="trophy"></i>Eng ko'p qoidabuzar bo'limlar</h3></div>
+          <div class="leaderboard">
+            <div class="lb-row"><div class="lb-rank top1">1</div><div class="lb-avatar" style="background:linear-gradient(135deg,#ef4444,#dc2626)"><i data-lucide="flame" style="width:14px;height:14px"></i></div><div><div class="lb-name">Eritish bo'limi</div><div class="lb-meta">3 kamera · 15 ishchi</div></div><div class="lb-score bad">42</div></div>
+            <div class="lb-row"><div class="lb-rank top2">2</div><div class="lb-avatar" style="background:linear-gradient(135deg,#f97316,#ea580c)"><i data-lucide="thermometer" style="width:14px;height:14px"></i></div><div><div class="lb-name">Pechkaxona</div><div class="lb-meta">4 kamera · 12 ishchi</div></div><div class="lb-score bad">28</div></div>
+            <div class="lb-row"><div class="lb-rank top3">3</div><div class="lb-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><i data-lucide="package" style="width:14px;height:14px"></i></div><div><div class="lb-name">Ombor</div><div class="lb-meta">2 kamera · 8 ishchi</div></div><div class="lb-score">15</div></div>
+            <div class="lb-row"><div class="lb-rank">4</div><div class="lb-avatar" style="background:linear-gradient(135deg,#ec4899,#be185d)"><i data-lucide="droplet" style="width:14px;height:14px"></i></div><div><div class="lb-name">Quyish bo'limi</div><div class="lb-meta">2 kamera · 6 ishchi</div></div><div class="lb-score">8</div></div>
+            <div class="lb-row"><div class="lb-rank">5</div><div class="lb-avatar" style="background:linear-gradient(135deg,#10b981,#059669)"><i data-lucide="briefcase" style="width:14px;height:14px"></i></div><div><div class="lb-name">Ofis</div><div class="lb-meta">1 kamera · 6 xodim</div></div><div class="lb-score good">2</div></div>
+          </div>
+        </div>
+
+        <div class="analytics-card span-6">
+          <div class="analytics-card-header"><h3><i data-lucide="clock-9"></i>Soat bo'yicha taqsimot</h3><div class="analytics-meta">24 soat — kunlik o'rtacha</div></div>
+          <div class="chart-container" style="height:240px"><canvas id="chartHourly"></canvas></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/pages/analytics.js"></script>
+<script>
+  SergakApp.mountShell('analytics');
+  initAnalytics();
+</script>
+</body>
+</html>

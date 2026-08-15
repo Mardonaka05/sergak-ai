@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Hodisalar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <div class="cameras-toolbar">
+        <div class="toolbar-filter"><i data-lucide="calendar"></i><select><option>Bugun</option><option>Kechagi</option><option>Bu hafta</option><option>Bu oy</option></select></div>
+        <div class="toolbar-filter"><i data-lucide="building-2"></i><select><option>Barcha bo'limlar</option></select></div>
+        <div class="toolbar-filter"><i data-lucide="boxes"></i><select><option>Barcha modullar</option></select></div>
+        <div class="topbar-search" style="margin-left:auto;width:240px">
+          <i data-lucide="search"></i><input type="text" placeholder="Hodisa qidirish...">
+        </div>
+        <button class="btn btn-secondary"><i data-lucide="download"></i>Eksport</button>
+      </div>
+      <div class="events-table">
+        <div class="events-table-header">
+          <div></div><div>HODISA</div><div>BO'LIM</div><div>KAMERA</div><div>VAQT</div><div>ANIQLIK</div><div>AMAL</div>
+        </div>
+        <div id="eventsList"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  SergakApp.mountShell('events');
+  document.getElementById('eventsList').innerHTML = SergakData.RECENT_ALERTS.map(a=>{
+    const dept = SergakApp.deptByKey(a.dept);
+    const md = SergakData.MODULE_DEFS[a.module];
+    const conf = (Math.random()*15+80).toFixed(1);
+    return `<div class="event-row">
+      <div class="event-thumb">
+        <i data-lucide="image"></i>
+        <div class="alert-thumb-icon-overlay" style="background:${md.color};bottom:2px;right:2px"><i data-lucide="${md.icon}"></i></div>
+      </div>
+      <div>
+        <div class="event-cell-strong">${a.msg}</div>
+        <div class="event-cell" style="margin-top:2px">${md.name} moduli</div>
+      </div>
+      <div><span class="dept-badge ${a.dept}">${dept.name.split(' ')[0]}</span></div>
+      <div class="event-cell-strong">${a.cam}</div>
+      <div>
+        <div class="event-cell-strong">${a.time}</div>
+        <div class="event-cell">Bugun</div>
+      </div>
+      <div><span class="event-confidence">${conf}%</span></div>
+      <div style="display:flex;gap:5px">
+        <button class="icon-btn" style="width:30px;height:30px"><i data-lucide="eye" style="width:13px;height:13px"></i></button>
+        <button class="icon-btn" style="width:30px;height:30px"><i data-lucide="check" style="width:13px;height:13px"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+</script>
+</body>
+</html>

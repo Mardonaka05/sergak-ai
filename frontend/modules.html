@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — AI modullar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+.module-detail-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .15s}
+.module-detail-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.module-detail-card.disabled{opacity:.55}
+.module-hero{position:relative;height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.module-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7}
+.module-hero-icon{position:relative;width:78px;height:78px;border-radius:18px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;color:#fff;z-index:1}
+.module-hero-icon i{width:36px;height:36px}
+.module-status-pill{position:absolute;top:12px;right:12px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.5px;z-index:2;display:inline-flex;align-items:center;gap:6px}
+.module-status-pill .live-dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.module-actions-top{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:2}
+.module-action-btn{width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.module-action-btn:hover{background:rgba(0,0,0,.85)}
+.module-action-btn.danger:hover{background:var(--danger)}
+.module-action-btn i{width:14px;height:14px}
+.module-content{padding:18px}
+.module-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.module-name-version{font-size:10px;background:var(--surface-2);color:var(--text-muted);padding:2px 7px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-weight:600}
+.module-desc{font-size:13px;color:var(--text-muted);line-height:1.5;margin-bottom:14px;min-height:38px}
+.module-stats-row{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface-2);border-radius:10px;padding:12px;gap:6px;margin-bottom:12px}
+.module-stat-mini{text-align:center}
+.module-stat-val{font-size:18px;font-weight:800;color:var(--text)}
+.module-stat-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.module-tech{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;background:var(--surface-2);padding:8px 12px;border-radius:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.module-tech i{width:14px;height:14px;color:var(--success);flex-shrink:0}
+.module-tech.no-model{color:var(--warning)}
+.module-tech.no-model i{color:var(--warning)}
+.module-classes{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.module-class-chip{font-size:10px;background:var(--surface-2);color:var(--text-muted);padding:2px 8px;border-radius:99px;font-family:'JetBrains Mono',monospace}
+
+.empty-add-card{background:transparent;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;min-height:340px;cursor:pointer;transition:all .15s}
+.empty-add-card:hover{border-color:var(--primary);background:rgba(59,130,246,.05)}
+.empty-add-icon{width:64px;height:64px;border-radius:16px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:14px;transition:all .15s}
+.empty-add-card:hover .empty-add-icon{background:var(--primary);color:#fff;transform:scale(1.1)}
+.empty-add-icon i{width:30px;height:30px}
+
+/* Upload dropzone */
+.dropzone{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface-2)}
+.dropzone:hover,.dropzone.dragover{border-color:var(--primary);background:rgba(59,130,246,.08)}
+.dropzone i{width:38px;height:38px;color:var(--text-muted);margin-bottom:8px}
+.dropzone.dragover i{color:var(--primary)}
+.dropzone-title{font-weight:600;color:var(--text);font-size:14px;margin-bottom:4px}
+.dropzone-hint{font-size:11px;color:var(--text-muted)}
+.dropzone-file{display:flex;align-items:center;gap:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:10px 12px;margin-top:10px}
+.dropzone-file-icon{width:34px;height:34px;border-radius:8px;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dropzone-file-icon i{width:18px;height:18px}
+.dropzone-file-info{flex:1;min-width:0}
+.dropzone-file-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dropzone-file-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+
+.icon-picker{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;background:var(--surface-2);padding:10px;border-radius:8px}
+.icon-pick{width:36px;height:36px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;color:var(--text-muted);transition:all .12s}
+.icon-pick:hover{color:var(--text);background:var(--surface-3)}
+.icon-pick.selected{border-color:var(--primary);color:var(--primary);background:rgba(59,130,246,.1)}
+.icon-pick i{width:18px;height:18px}
+
+.color-picker-row{display:flex;gap:6px;flex-wrap:wrap}
+.color-pick{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:transform .12s}
+.color-pick.selected{border-color:#fff;transform:scale(1.1);box-shadow:0 0 0 2px var(--primary)}
+
+.sys-info-banner{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(6,182,212,.05));border:1px solid rgba(59,130,246,.2);padding:12px 16px;border-radius:12px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.sys-info-banner i{color:var(--primary);width:18px;height:18px;flex-shrink:0}
+.sys-info-banner.warn{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(239,68,68,.05));border-color:rgba(245,158,11,.3)}
+.sys-info-banner.warn i{color:var(--warning)}
+.sys-info-content{flex:1;font-size:12px;color:var(--text)}
+.sys-info-content b{color:var(--text)}
+.sys-info-content code{background:var(--surface-3);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <div id="sysInfoBox"></div>
+
+      <div class="cameras-toolbar" style="margin-bottom:20px">
+        <div style="font-size:14px;color:var(--text-muted)" id="modulesCount">Yuklanmoqda...</div>
+        <button class="btn btn-secondary" style="margin-left:auto" onclick="openModuleModal(null)">
+          <i data-lucide="plus"></i>Yangi modul yaratish
+        </button>
+        <button class="btn btn-primary" onclick="loadModules()">
+          <i data-lucide="refresh-cw"></i>Yangilash
+        </button>
+      </div>
+
+      <div class="cam-cards-grid" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr))" id="modulesGrid">
+        <div style="padding:40px;text-align:center;color:var(--text-muted);grid-column:1/-1">
+          <i data-lucide="loader-2" style="width:30px;height:30px;animation:spin 1.2s linear infinite"></i>
+          <div style="margin-top:8px">Modullar yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Module edit/create modal -->
+<div class="modal-overlay" id="modalModule">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modModalTitle">Modul</div>
+        <div class="modal-subtitle" id="modModalSubtitle">—</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalModule')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Image -->
+      <div class="form-group">
+        <label class="form-label">Modul rasmi (ixtiyoriy)</label>
+        <div class="dropzone" id="imgDropzone" onclick="document.getElementById('imgInput').click()">
+          <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImageFile(event)">
+          <div id="imgDzEmpty">
+            <i data-lucide="image"></i>
+            <div class="dropzone-title">Rasm tashlang yoki bosing</div>
+            <div class="dropzone-hint">JPG / PNG / WebP · 10 MB gacha</div>
+          </div>
+          <div id="imgDzPreview" style="display:none">
+            <img id="imgDzPreviewImg" src="" style="max-width:100%;max-height:140px;border-radius:8px;margin-bottom:8px" alt="">
+            <div style="display:flex;gap:8px;justify-content:center">
+              <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px" onclick="event.stopPropagation();document.getElementById('imgInput').click()">
+                <i data-lucide="upload"></i>Boshqa rasm
+              </button>
+              <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;color:var(--danger)" onclick="event.stopPropagation();removeImage()">
+                <i data-lucide="trash-2"></i>O'chirish
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Modul nomi <span class="required">*</span></label>
+          <input class="form-input" id="modName" placeholder="Masalan: Kaska Aniqlash">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kalit (key) <span class="required">*</span></label>
+          <input class="form-input" id="modKey" placeholder="helmet" style="font-family:'JetBrains Mono',monospace">
+          <div class="form-hint">Faqat lotin, raqam va _ (avtomatik)</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tavsif</label>
+        <textarea class="form-input" id="modDesc" rows="2" placeholder="Bu modul nimani aniqlaydi?"></textarea>
+      </div>
+
+      <!-- .pt file -->
+      <div class="form-group">
+        <label class="form-label">AI model (.pt fayl) <span id="ptStarHint" style="font-size:11px;color:var(--text-muted);margin-left:6px">— modul yaratilgandan keyin yuklash mumkin</span></label>
+        <div class="dropzone" id="ptDropzone" onclick="document.getElementById('ptInput').click()">
+          <input type="file" id="ptInput" accept=".pt" style="display:none" onchange="handlePtFile(event)">
+          <div id="ptDzEmpty">
+            <i data-lucide="brain-circuit"></i>
+            <div class="dropzone-title">.pt faylni shu yerga tashlang</div>
+            <div class="dropzone-hint">YOLOv8 PyTorch model · 500 MB gacha</div>
+          </div>
+          <div id="ptDzFile" class="dropzone-file" style="display:none;margin:0">
+            <div class="dropzone-file-icon"><i data-lucide="check"></i></div>
+            <div class="dropzone-file-info">
+              <div class="dropzone-file-name" id="ptDzName">—</div>
+              <div class="dropzone-file-meta" id="ptDzMeta">—</div>
+            </div>
+            <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px" onclick="event.stopPropagation();document.getElementById('ptInput').click()">
+              <i data-lucide="refresh-cw"></i>Almashtirish
+            </button>
+          </div>
+        </div>
+        <div id="ptClassesInfo" style="display:none;margin-top:8px"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Aniqlik chegarasi: <span id="confLabel">65%</span></label>
+          <input type="range" id="modConf" min="10" max="95" value="65" oninput="document.getElementById('confLabel').textContent=this.value+'%'">
+          <div class="form-hint">Pastroq = ko'proq aniqlash, lekin ko'proq false alarm</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cooldown (soniya)</label>
+          <input class="form-input" type="number" id="modCooldown" min="5" max="3600" value="60">
+          <div class="form-hint">Bir xabar takrorlanmasligi uchun pauza</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Muhimlik darajasi</label>
+          <select class="form-select" id="modPriority">
+            <option value="low">Past — Past xavf</option>
+            <option value="normal" selected>O'rta — Standart</option>
+            <option value="high">Yuqori — Muhim</option>
+            <option value="critical">Kritik — Favqulodda</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Holat</label>
+          <label style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--surface-2);border-radius:10px;cursor:pointer">
+            <input type="checkbox" id="modEnabled" checked style="width:18px;height:18px;accent-color:var(--primary)">
+            <span style="font-weight:600">Faol — kameralarda ishlatish mumkin</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Belgi (Icon)</label>
+          <div class="icon-picker" id="iconPicker"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rang</label>
+          <div class="color-picker-row" id="colorPicker"></div>
+        </div>
+      </div>
+
+      <div id="modModalError" style="display:none;margin-top:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modDeleteBtn" onclick="deleteModule()" style="display:none;color:var(--danger);margin-right:auto">
+        <i data-lucide="trash-2"></i>Modulni o'chirish
+      </button>
+      <button class="btn btn-secondary" onclick="SergakApp.closeModal('modalModule')">Bekor</button>
+      <button class="btn btn-primary" id="modSaveBtn" onclick="saveModule()">
+        <i data-lucide="save"></i><span id="modSaveText">Saqlash</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+SergakAuth.requireAuth();
+SergakApp.mountShell('modules');
+
+const ICONS = ['hard-hat','smartphone','cigarette-off','user-x','flame','shield-x','users-2','boxes',
+  'video','eye','alert-triangle','zap','target','radar','shield','shield-check','bot','brain-circuit',
+  'cpu','activity','aperture','car','truck','package','wrench','hammer','flashlight','siren'];
+const COLORS = ['#3b82f6','#06b6d4','#10b981','#84cc16','#eab308','#f59e0b','#ef4444','#ec4899',
+  '#a855f7','#8b5cf6','#6366f1','#14b8a6'];
+const PRIORITY_LABELS = {low:'Past', normal:"O'rta", high:'Yuqori', critical:'Kritik'};
+const STATUS_COLOR = {
+  success:'background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);color:#4adfa6',
+  danger:'background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.5);color:#ff8585',
+  warning:'background:rgba(245,158,11,.25);border:1px solid rgba(245,158,11,.5);color:#ffc466',
+  muted:'background:rgba(141,155,184,.15);border:1px solid var(--border);color:var(--text-muted)',
+};
+const ME = SergakAuth.getUser();
+const IS_ADMIN = ME && ME.role === 'admin';
+
+let MODULES = [];
+let EDITING_ID = null;
+let PENDING_PT_FILE = null;
+let PENDING_IMG_FILE = null;
+let SELECTED_ICON = 'hard-hat';
+let SELECTED_COLOR = '#3b82f6';
+let CURRENT_IMG_URL = '';
+
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function loadSysInfo(){
+  try {
+    const r = await SergakAuth.fetch('/api/modules/system/info');
+    if (!r.ok) return;
+    const info = await r.json();
+    const box = document.getElementById('sysInfoBox');
+    if (!info.has_ultralytics) {
+      box.innerHTML = `
+        <div class="sys-info-banner warn">
+          <i data-lucide="alert-triangle"></i>
+          <div class="sys-info-content">
+            <b>Diqqat:</b> <code>ultralytics</code> kutubxonasi o'rnatilmagan — .pt fayllar yuklash mumkin, ammo avtomatik tekshirilmaydi va inference ishlamaydi.
+            Server muhitida o'rnating: <code>pip install ultralytics</code>
+          </div>
+        </div>`;
+    } else {
+      const cuda = info.cuda_available ? `<b style="color:var(--success)">CUDA</b> · ${escapeHtml(info.cuda_device||'')}` : `<b style="color:var(--warning)">CPU rejim</b>`;
+      box.innerHTML = `
+        <div class="sys-info-banner">
+          <i data-lucide="check-circle-2"></i>
+          <div class="sys-info-content">
+            <b>Inference tayyor:</b> torch ${escapeHtml(info.torch_version||'')} · ${cuda} · .pt fayllar avtomatik tekshiriladi
+          </div>
+        </div>`;
+    }
+    lucide.createIcons();
+  } catch (e) {}
+}
+
+async function loadModules(){
+  try {
+    const r = await SergakAuth.fetch('/api/modules');
+    if (!r.ok) throw new Error('http '+r.status);
+    MODULES = await r.json();
+    renderModulesGrid();
+  } catch (e) {
+    document.getElementById('modulesGrid').innerHTML =
+      `<div style="padding:40px;text-align:center;color:var(--danger);grid-column:1/-1">Modullarni yuklab bo'lmadi: ${e.message}</div>`;
+  }
+}
+
+function renderModulesGrid(){
+  document.getElementById('modulesCount').textContent =
+    `${MODULES.length} ta AI modul · ${MODULES.filter(m=>m.enabled).length} ta faol · ${MODULES.filter(m=>m.model_path).length} ta .pt yuklangan`;
+
+  const grid = document.getElementById('modulesGrid');
+  if (!MODULES.length) {
+    grid.innerHTML = `
+      <div class="empty-add-card" onclick="openModuleModal(null)" style="grid-column:1/-1">
+        <div class="empty-add-icon"><i data-lucide="plus"></i></div>
+        <div class="module-name">Hali modul yo'q</div>
+        <div class="module-desc" style="margin-bottom:0">Birinchi AI modulingizni yarating</div>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  let html = MODULES.map(m => {
+    const hasModel = !!m.model_path;
+    const grad = `linear-gradient(135deg,${m.color},${shadeColor(m.color,-30)})`;
+    const status = !m.enabled ? {text:'PASIF', cls:'muted'}
+      : !hasModel ? {text:'SOZLANMOQDA', cls:'warning'}
+      : m.priority === 'critical' ? {text:'KRITIK', cls:'danger'}
+      : {text:'FAOL', cls:'success'};
+    const techText = hasModel
+      ? `${escapeHtml(m.model_filename||'model.pt')} · ${m.file_size_mb.toFixed(1)} MB · ${escapeHtml(m.architecture||'YOLOv8')}`
+      : `.pt fayl yuklanmagan — yuklash uchun bosing`;
+    const techClass = hasModel ? '' : 'no-model';
+
+    const inferText = m.avg_inference_ms > 0 ? `${m.avg_inference_ms.toFixed(0)} ms` : '—';
+    const accText = m.accuracy_pct > 0 ? `${m.accuracy_pct.toFixed(1)}%` : '—';
+    const cntText = m.total_detections > 0 ? m.total_detections : '—';
+
+    const classesHtml = m.class_names && m.class_names.length ?
+      '<div class="module-classes">' + m.class_names.slice(0,5).map(c=>`<span class="module-class-chip">${escapeHtml(c)}</span>`).join('') +
+      (m.class_names.length > 5 ? `<span class="module-class-chip">+${m.class_names.length-5}</span>` : '') + '</div>' : '';
+
+    const adminControls = IS_ADMIN ? `
+      <div class="module-actions-top">
+        <button class="module-action-btn" onclick="event.stopPropagation();toggleModule(${m.id})" title="${m.enabled?'O\'chirish':'Yoqish'}">
+          <i data-lucide="${m.enabled?'pause':'play'}"></i>
+        </button>
+        <button class="module-action-btn" onclick="event.stopPropagation();openModuleModal(${m.id})" title="Tahrirlash">
+          <i data-lucide="edit-3"></i>
+        </button>
+      </div>` : '';
+
+    const imgSrc = m.image_url || defaultModuleImage(m.key, m.icon);
+
+    return `
+    <div class="module-detail-card ${!m.enabled?'disabled':''}" onclick="${IS_ADMIN?`openModuleModal(${m.id})`:''}">
+      <div class="module-hero" style="background:${grad}">
+        ${imgSrc ? `<img src="${escapeHtml(imgSrc)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="module-hero-icon"><i data-lucide="${escapeHtml(m.icon||'boxes')}"></i></div>
+        <div class="module-status-pill" style="${STATUS_COLOR[status.cls]}">
+          ${status.cls!=='muted'?'<span class="live-dot" style="'+(status.cls==='danger'?'background:var(--danger)':(status.cls==='warning'?'background:var(--warning)':''))+'"></span>':''}
+          ${status.text}
+        </div>
+        ${adminControls}
+      </div>
+      <div class="module-content">
+        <div class="module-name">
+          ${escapeHtml(m.name)}
+          <span class="module-name-version">${escapeHtml(m.model_version||'v1')}</span>
+        </div>
+        <div class="module-desc">${escapeHtml(m.description||'Tavsif yo\'q')}</div>
+        <div class="module-stats-row">
+          <div class="module-stat-mini"><div class="module-stat-val">${accText}</div><div class="module-stat-lbl">Aniqlik</div></div>
+          <div class="module-stat-mini"><div class="module-stat-val">${inferText}</div><div class="module-stat-lbl">Inference</div></div>
+          <div class="module-stat-mini"><div class="module-stat-val">${cntText}</div><div class="module-stat-lbl">Aniqlandi</div></div>
+        </div>
+        <div class="module-tech ${techClass}">
+          <i data-lucide="${hasModel?'check-circle-2':'alert-circle'}"></i>${techText}
+        </div>
+        ${classesHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  if (IS_ADMIN) {
+    html += `
+      <div class="empty-add-card" onclick="openModuleModal(null)">
+        <div class="empty-add-icon"><i data-lucide="plus"></i></div>
+        <div class="module-name">Yangi modul qo'shish</div>
+        <div class="module-desc" style="margin-bottom:0;text-align:center">Maxsus .pt model yuklang yoki YOLOv8 dan import qiling</div>
+      </div>`;
+  }
+
+  grid.innerHTML = html;
+  lucide.createIcons();
+}
+
+function defaultModuleImage(key, icon){
+  // Use Unsplash with curated industrial images per module type
+  const map = {
+    helmet:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80',
+    phone:'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=600&q=80',
+    smoking:'https://images.unsplash.com/photo-1527761939622-933c972ea2fe?w=600&q=80',
+    fall:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80',
+    fire:'https://images.unsplash.com/photo-1486591038213-cef02f604897?w=600&q=80',
+    zone:'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&q=80',
+    twoperson:'https://images.unsplash.com/photo-1581092335397-7c83e9ac82e8?w=600&q=80',
+  };
+  return map[key] || '';
+}
+
+function shadeColor(hex, percent){
+  try {
+    const num = parseInt(hex.replace('#',''),16);
+    let r = (num>>16)+percent, g = ((num>>8)&0x00FF)+percent, b = (num&0x0000FF)+percent;
+    r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+    return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');
+  } catch { return hex; }
+}
+
+async function toggleModule(id){
+  try {
+    const r = await SergakAuth.fetch(`/api/modules/${id}/toggle`, {method:'POST'});
+    if (!r.ok) { SergakApp.showToast('error','Xato',"O'zgartirib bo'lmadi"); return; }
+    SergakApp.showToast('success','OK','Modul holati o\'zgartirildi');
+    loadModules();
+  } catch (e) { SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+/* ============ Modal ============ */
+
+function buildIconPicker(){
+  document.getElementById('iconPicker').innerHTML = ICONS.map(ic =>
+    `<div class="icon-pick ${ic===SELECTED_ICON?'selected':''}" data-icon="${ic}" onclick="pickIcon('${ic}')">
+      <i data-lucide="${ic}"></i>
+    </div>`).join('');
+  lucide.createIcons();
+}
+function pickIcon(ic){
+  SELECTED_ICON = ic;
+  document.querySelectorAll('#iconPicker .icon-pick').forEach(el => el.classList.toggle('selected', el.dataset.icon === ic));
+}
+
+function buildColorPicker(){
+  document.getElementById('colorPicker').innerHTML = COLORS.map(c =>
+    `<div class="color-pick ${c===SELECTED_COLOR?'selected':''}" data-color="${c}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join('');
+}
+function pickColor(c){
+  SELECTED_COLOR = c;
+  document.querySelectorAll('#colorPicker .color-pick').forEach(el => el.classList.toggle('selected', el.dataset.color === c));
+}
+
+function openModuleModal(id){
+  if (!IS_ADMIN) {
+    SergakApp.showToast('error','Ruxsat yo\'q','Faqat admin modullarni boshqaradi');
+    return;
+  }
+  EDITING_ID = id;
+  PENDING_PT_FILE = null;
+  PENDING_IMG_FILE = null;
+  CURRENT_IMG_URL = '';
+  document.getElementById('modModalError').style.display = 'none';
+  document.getElementById('ptDzEmpty').style.display = 'block';
+  document.getElementById('ptDzFile').style.display = 'none';
+  document.getElementById('ptClassesInfo').style.display = 'none';
+  document.getElementById('imgDzEmpty').style.display = 'block';
+  document.getElementById('imgDzPreview').style.display = 'none';
+
+  if (id) {
+    const m = MODULES.find(x => x.id === id);
+    if (!m) return;
+    document.getElementById('modModalTitle').textContent = m.name + ' — tahrirlash';
+    document.getElementById('modModalSubtitle').textContent = m.model_path
+      ? `${m.model_filename||'model.pt'} · ${m.file_size_mb.toFixed(1)} MB · ${m.architecture||'YOLOv8'}`
+      : '.pt fayl hali yuklanmagan';
+    document.getElementById('modName').value = m.name;
+    document.getElementById('modKey').value = m.key;
+    document.getElementById('modKey').disabled = true;
+    document.getElementById('modDesc').value = m.description || '';
+    document.getElementById('modConf').value = Math.round(m.confidence_threshold*100);
+    document.getElementById('confLabel').textContent = Math.round(m.confidence_threshold*100)+'%';
+    document.getElementById('modCooldown').value = m.cooldown_sec;
+    document.getElementById('modPriority').value = m.priority;
+    document.getElementById('modEnabled').checked = m.enabled;
+    SELECTED_ICON = m.icon || 'boxes';
+    SELECTED_COLOR = m.color || '#3b82f6';
+    CURRENT_IMG_URL = m.image_url || '';
+    if (m.image_url) {
+      document.getElementById('imgDzEmpty').style.display = 'none';
+      document.getElementById('imgDzPreview').style.display = 'block';
+      document.getElementById('imgDzPreviewImg').src = m.image_url;
+    }
+    if (m.model_path) {
+      document.getElementById('ptDzEmpty').style.display = 'none';
+      document.getElementById('ptDzFile').style.display = 'flex';
+      document.getElementById('ptDzName').textContent = m.model_filename || 'model.pt';
+      document.getElementById('ptDzMeta').textContent = `${m.file_size_mb.toFixed(1)} MB · ${m.architecture || 'YOLOv8'} · ${m.num_classes} klass`;
+      if (m.class_names && m.class_names.length) {
+        document.getElementById('ptClassesInfo').style.display = 'block';
+        document.getElementById('ptClassesInfo').innerHTML =
+          '<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Aniqlangan klasslar:</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:4px">' +
+          m.class_names.map(c=>`<span class="module-class-chip" style="background:var(--surface-2)">${escapeHtml(c)}</span>`).join('') + '</div>';
+      }
+    }
+    document.getElementById('ptStarHint').textContent = '— yangi .pt yuklash bilan eski almashtiriladi';
+    document.getElementById('modDeleteBtn').style.display = 'inline-flex';
+  } else {
+    document.getElementById('modModalTitle').textContent = "Yangi modul yaratish";
+    document.getElementById('modModalSubtitle').textContent = "Avval ma'lumotlarni kiriting, keyin .pt va rasm yuklanadi";
+    document.getElementById('modName').value = '';
+    document.getElementById('modKey').value = '';
+    document.getElementById('modKey').disabled = false;
+    document.getElementById('modDesc').value = '';
+    document.getElementById('modConf').value = 65;
+    document.getElementById('confLabel').textContent = '65%';
+    document.getElementById('modCooldown').value = 60;
+    document.getElementById('modPriority').value = 'normal';
+    document.getElementById('modEnabled').checked = true;
+    SELECTED_ICON = 'hard-hat';
+    SELECTED_COLOR = '#3b82f6';
+    document.getElementById('ptStarHint').textContent = '— modul yaratilgandan keyin yuklash mumkin';
+    document.getElementById('modDeleteBtn').style.display = 'none';
+  }
+
+  buildIconPicker();
+  buildColorPicker();
+  SergakApp.openModal('modalModule');
+  setTimeout(()=>lucide.createIcons(), 50);
+}
+
+function handlePtFile(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  if (!f.name.toLowerCase().endsWith('.pt')) {
+    SergakApp.showToast('error','Xato','Faqat .pt fayllar yuklang');
+    e.target.value = '';
+    return;
+  }
+  if (f.size > 500*1024*1024) {
+    SergakApp.showToast('error','Xato','Fayl 500 MB dan katta');
+    e.target.value = '';
+    return;
+  }
+  PENDING_PT_FILE = f;
+  document.getElementById('ptDzEmpty').style.display = 'none';
+  document.getElementById('ptDzFile').style.display = 'flex';
+  document.getElementById('ptDzName').textContent = f.name;
+  document.getElementById('ptDzMeta').textContent = `${(f.size/(1024*1024)).toFixed(2)} MB · yangi`;
+  lucide.createIcons();
+}
+
+function handleImageFile(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) {
+    SergakApp.showToast('error','Xato','Faqat rasm yuklang');
+    e.target.value = '';
+    return;
+  }
+  if (f.size > 10*1024*1024) {
+    SergakApp.showToast('error','Xato','Rasm 10 MB dan katta');
+    e.target.value = '';
+    return;
+  }
+  PENDING_IMG_FILE = f;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('imgDzEmpty').style.display = 'none';
+    document.getElementById('imgDzPreview').style.display = 'block';
+    document.getElementById('imgDzPreviewImg').src = ev.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+
+function removeImage(){
+  PENDING_IMG_FILE = null;
+  CURRENT_IMG_URL = '';
+  document.getElementById('imgDzEmpty').style.display = 'block';
+  document.getElementById('imgDzPreview').style.display = 'none';
+  document.getElementById('imgInput').value = '';
+}
+
+function showModalError(msg){
+  const el = document.getElementById('modModalError');
+  el.style.display = 'block';
+  el.innerHTML = `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:10px;border-radius:8px;color:var(--danger);font-size:12px"><i data-lucide="alert-circle" style="width:14px;height:14px;display:inline;vertical-align:middle"></i> ${escapeHtml(msg)}</div>`;
+  lucide.createIcons();
+}
+
+async function saveModule(){
+  document.getElementById('modModalError').style.display = 'none';
+  const name = document.getElementById('modName').value.trim();
+  const key = document.getElementById('modKey').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'_');
+  const desc = document.getElementById('modDesc').value.trim();
+  const conf = parseInt(document.getElementById('modConf').value)/100;
+  const cooldown = parseInt(document.getElementById('modCooldown').value);
+  const priority = document.getElementById('modPriority').value;
+  const enabled = document.getElementById('modEnabled').checked;
+
+  if (!name) { showModalError("Modul nomini kiriting"); return; }
+  if (!EDITING_ID && !key) { showModalError("Kalit (key) kiriting"); return; }
+
+  const btn = document.getElementById('modSaveBtn');
+  btn.disabled = true;
+  document.getElementById('modSaveText').textContent = "Saqlanmoqda...";
+
+  try {
+    let moduleId = EDITING_ID;
+
+    if (!moduleId) {
+      // Create
+      const r = await SergakAuth.fetch('/api/modules', {
+        method:'POST',
+        body: {key, name, description: desc, confidence_threshold: conf, cooldown_sec: cooldown,
+               priority, icon: SELECTED_ICON, color: SELECTED_COLOR}
+      });
+      if (!r.ok) {
+        const err = await r.json();
+        showModalError(err.detail || 'Yaratib bo\'lmadi');
+        btn.disabled = false; document.getElementById('modSaveText').textContent = "Saqlash";
+        return;
+      }
+      const created = await r.json();
+      moduleId = created.id;
+    } else {
+      // Update fields
+      const r = await SergakAuth.fetch(`/api/modules/${moduleId}`, {
+        method:'PUT',
+        body: {name, description: desc, confidence_threshold: conf, cooldown_sec: cooldown,
+               priority, icon: SELECTED_ICON, color: SELECTED_COLOR, enabled}
+      });
+      if (!r.ok) {
+        const err = await r.json();
+        showModalError(err.detail || 'Saqlab bo\'lmadi');
+        btn.disabled = false; document.getElementById('modSaveText').textContent = "Saqlash";
+        return;
+      }
+    }
+
+    // Upload pending image
+    if (PENDING_IMG_FILE) {
+      document.getElementById('modSaveText').textContent = "Rasm yuklanmoqda...";
+      const fd = new FormData();
+      fd.append('file', PENDING_IMG_FILE);
+      const tok = SergakAuth.getToken();
+      const r = await fetch(`/api/modules/${moduleId}/upload-image`, {
+        method:'POST', headers:{'Authorization':'Bearer '+tok}, body: fd
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(()=>({}));
+        SergakApp.showToast('error','Rasm xato', err.detail || 'Rasm yuklanmadi');
+      }
+    } else if (EDITING_ID && CURRENT_IMG_URL === '' && MODULES.find(m=>m.id===EDITING_ID)?.image_url) {
+      // User removed image
+      await SergakAuth.fetch(`/api/modules/${moduleId}/image`, {method:'DELETE'});
+    }
+
+    // Upload pending .pt
+    if (PENDING_PT_FILE) {
+      document.getElementById('modSaveText').textContent = ".pt yuklanmoqda...";
+      const fd = new FormData();
+      fd.append('file', PENDING_PT_FILE);
+      const tok = SergakAuth.getToken();
+      const r = await fetch(`/api/modules/${moduleId}/upload-model`, {
+        method:'POST', headers:{'Authorization':'Bearer '+tok}, body: fd
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(()=>({}));
+        SergakApp.showToast('error', '.pt xato', err.detail || '.pt yuklanmadi');
+      }
+    }
+
+    SergakApp.closeModal('modalModule');
+    SergakApp.showToast('success','OK', EDITING_ID ? 'Modul yangilandi' : "Modul yaratildi");
+    await loadModules();
+  } catch (e) {
+    showModalError('Tarmoq xatosi: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('modSaveText').textContent = "Saqlash";
+  }
+}
+
+async function deleteModule(){
+  if (!EDITING_ID) return;
+  const m = MODULES.find(x => x.id === EDITING_ID);
+  if (!m) return;
+  if (!confirm(`"${m.name}" modulini butunlay o'chirmoqchimisiz?\n\n.pt fayli va rasmlari ham o'chiriladi. Bu amal qaytarilmaydi.`)) return;
+  try {
+    const r = await SergakAuth.fetch(`/api/modules/${EDITING_ID}`, {method:'DELETE'});
+    if (!r.ok && r.status !== 204) {
+      const err = await r.json().catch(()=>({}));
+      SergakApp.showToast('error','Xato', err.detail || "O'chirib bo'lmadi");
+      return;
+    }
+    SergakApp.closeModal('modalModule');
+    SergakApp.showToast('success','O\'chirildi', `${m.name} olib tashlandi`);
+    loadModules();
+  } catch (e) { SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+/* Auto-fill key from name for new modules */
+document.getElementById('modName').addEventListener('input', e => {
+  if (EDITING_ID) return;
+  const key = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,30);
+  document.getElementById('modKey').value = key;
+});
+
+/* Drag & drop handlers for dropzones */
+['ptDropzone','imgDropzone'].forEach(id => {
+  const dz = document.getElementById(id);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (!f) return;
+    const isPt = id === 'ptDropzone';
+    const inputId = isPt ? 'ptInput' : 'imgInput';
+    const input = document.getElementById(inputId);
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    input.files = dt.files;
+    input.dispatchEvent(new Event('change'));
+  });
+});
+
+// Init
+loadSysInfo();
+loadModules();
+lucide.createIcons();
+</script>
+</body>
+</html>

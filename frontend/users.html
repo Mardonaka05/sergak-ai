@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI - Foydalanuvchilar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <!-- Pending requests panel -->
+      <div id="pendingPanel" style="display:none;margin-bottom:20px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.06));border:1px solid rgba(245,158,11,.3);border-radius:14px;padding:18px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.18);display:flex;align-items:center;justify-content:center;color:var(--warning)">
+            <i data-lucide="user-plus"></i>
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px;color:var(--text)">Kutilayotgan so'rovlar</div>
+            <div style="font-size:12px;color:var(--text-muted)" id="pendingCount">0 ta yangi so'rov</div>
+          </div>
+        </div>
+        <div id="pendingList"></div>
+      </div>
+
+      <div class="cameras-toolbar" style="margin-bottom:20px">
+        <div style="font-size:14px;color:var(--text-muted)" id="userCount">Yuklanmoqda...</div>
+        <div class="topbar-search" style="margin-left:auto;width:240px">
+          <i data-lucide="search"></i><input type="text" id="userSearch" placeholder="Foydalanuvchi qidirish..." oninput="filterUsers()">
+        </div>
+        <div class="toolbar-filter">
+          <i data-lucide="user-cog"></i>
+          <select id="roleFilter" onchange="filterUsers()">
+            <option value="">Hamma rollar</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="operator">Operator</option>
+            <option value="auditor">Auditor</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateModal()"><i data-lucide="user-plus"></i>Yangi foydalanuvchi</button>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(239,68,68,.1);color:#ff8585"><i data-lucide="shield"></i></div></div><div class="stat-value" id="cntAdmin">0</div><div class="stat-label">Administratorlar</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,.1);color:#7eb6ff"><i data-lucide="briefcase"></i></div></div><div class="stat-value" id="cntManager">0</div><div class="stat-label">Menejerlar</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon success"><i data-lucide="user"></i></div></div><div class="stat-value" id="cntOperator">0</div><div class="stat-label">Operatorlar</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(139,92,246,.1);color:#b599ff"><i data-lucide="eye"></i></div></div><div class="stat-value" id="cntAuditor">0</div><div class="stat-label">Auditorlar</div></div>
+      </div>
+
+      <div class="users-table-wrap">
+        <div class="users-row users-header-row">
+          <div></div><div>FOYDALANUVCHI</div><div>ROL</div><div>BO'LIM</div><div>OXIRGI FAOLLIK</div><div>AMAL</div>
+        </div>
+        <div id="usersList">
+          <div style="padding:40px;text-align:center;color:var(--text-muted)"><i data-lucide="loader-2" style="width:24px;height:24px"></i><div style="margin-top:10px">Yuklanmoqda...</div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create/Edit User Modal -->
+<div class="modal-overlay" id="modalUser">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="userModalTitle">Yangi foydalanuvchi</div>
+        <div class="modal-subtitle" id="userModalSubtitle">Foydalanuvchi qo'shing va emailga xabar yuboriladi</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalUser')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">To'liq ism <span class="required">*</span></label>
+          <input class="form-input" id="userFullName" placeholder="Ism Familiya">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email <span class="required">*</span></label>
+          <input class="form-input" type="email" id="userEmail" placeholder="email@example.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rol <span class="required">*</span></label>
+        <div class="modules-grid" style="grid-template-columns:repeat(2,1fr)">
+          <label class="module-toggle" data-role="admin" onclick="selectRole(this,'admin')">
+            <div class="module-toggle-icon" style="background:rgba(239,68,68,.15);color:#ff8585"><i data-lucide="shield"></i></div>
+            <div class="module-toggle-info">
+              <div class="module-toggle-name">Administrator</div>
+              <div class="module-toggle-desc">Hamma huquqlar, foydalanuvchi boshqaruv</div>
+            </div>
+          </label>
+          <label class="module-toggle active" data-role="manager" onclick="selectRole(this,'manager')">
+            <div class="module-toggle-icon" style="background:rgba(59,130,246,.15);color:#7eb6ff"><i data-lucide="briefcase"></i></div>
+            <div class="module-toggle-info">
+              <div class="module-toggle-name">Menejer</div>
+              <div class="module-toggle-desc">Bo'limni boshqarish, hisobotlar</div>
+            </div>
+          </label>
+          <label class="module-toggle" data-role="operator" onclick="selectRole(this,'operator')">
+            <div class="module-toggle-icon" style="background:rgba(16,185,129,.15);color:#4adfa6"><i data-lucide="user"></i></div>
+            <div class="module-toggle-info">
+              <div class="module-toggle-name">Operator</div>
+              <div class="module-toggle-desc">Live ko'rish, alertlarni acknowledge</div>
+            </div>
+          </label>
+          <label class="module-toggle" data-role="auditor" onclick="selectRole(this,'auditor')">
+            <div class="module-toggle-icon" style="background:rgba(139,92,246,.15);color:#b599ff"><i data-lucide="eye"></i></div>
+            <div class="module-toggle-info">
+              <div class="module-toggle-name">Auditor</div>
+              <div class="module-toggle-desc">Faqat o'qish - tarixiy hisobotlar</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bo'lim filtri (ixtiyoriy)</label>
+        <input class="form-input" id="userDept" placeholder="Eritish bo'limi (yoki bo'sh)">
+        <div class="form-hint">Foydalanuvchi faqat shu bo'limni ko'ra oladi. Bo'sh qoldirilsa - hammasini ko'radi.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Boshlang'ich parol (ixtiyoriy)</label>
+        <input class="form-input" type="text" id="userPassword" placeholder="changeme123 (default)">
+        <div class="form-hint">Foydalanuvchi email-OTP orqali ham kira oladi. Parol majburiy emas.</div>
+      </div>
+      <div id="userModalError" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SergakApp.closeModal('modalUser')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveUser()" id="userSaveBtn">
+        <i data-lucide="save"></i><span id="userSaveText">Saqlash va emailga yuborish</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  // Admin-only guard
+  SergakAuth.requireAdmin();
+  SergakApp.mountShell('users');
+
+  let allUsers = [];
+  let editingId = null;
+  let selectedRole = 'manager';
+
+  const roleIcon = {admin:'shield', manager:'briefcase', operator:'user', auditor:'eye'};
+  const roleName = {admin:'Admin', manager:'Manager', operator:'Operator', auditor:'Auditor'};
+  const roleColors = {admin:'ef4444', manager:'3b82f6', operator:'10b981', auditor:'8b5cf6'};
+
+  async function loadUsers() {
+    try {
+      const r = await SergakAuth.fetch('/api/users');
+      const all = await r.json();
+      // Split pending from active
+      const pending = all.filter(u => u.pending);
+      allUsers = all.filter(u => !u.pending);
+      renderPending(pending);
+      renderUsers();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('usersList').innerHTML = '<div style="padding:40px;text-align:center;color:var(--danger)">Foydalanuvchilarni yuklab bo\'lmadi</div>';
+    }
+  }
+
+  function renderPending(pending) {
+    const panel = document.getElementById('pendingPanel');
+    const list = document.getElementById('pendingList');
+    const cntEl = document.getElementById('pendingCount');
+    if (!pending.length) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+    cntEl.textContent = pending.length + " ta yangi so'rov admin ruxsatini kutmoqda";
+    list.innerHTML = pending.map(u => {
+      const colorHex = roleColors[u.requested_role || u.role] || '3b82f6';
+      const reqRole = roleName[u.requested_role || u.role] || u.role;
+      const reason = (u.request_reason || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
+        <div class="user-avatar-img" style="flex-shrink:0">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.username)}&backgroundColor=${colorHex}" alt="">
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;color:var(--text);font-size:14px">${u.full_name || u.username}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${u.email}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+            <span style="font-size:11px;background:rgba(245,158,11,.15);color:var(--warning);padding:3px 8px;border-radius:6px;font-weight:600">
+              So'ralayotgan rol: ${reqRole}
+            </span>
+            ${reason ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic">"${reason}"</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-secondary" style="padding:8px 12px;font-size:12px" onclick="editPending(${u.id})" title="Rolni o'zgartirib tasdiqlash">
+            <i data-lucide="edit-3" style="width:12px;height:12px"></i>Tahrirlash
+          </button>
+          <button class="btn btn-primary" style="padding:8px 14px;font-size:12px;background:var(--success);border-color:var(--success)" onclick="approveUser(${u.id})">
+            <i data-lucide="check" style="width:12px;height:12px"></i>Tasdiqlash
+          </button>
+          <button class="btn btn-secondary" style="padding:8px 14px;font-size:12px;background:rgba(239,68,68,.12);color:var(--danger);border-color:rgba(239,68,68,.3)" onclick="rejectUser(${u.id})">
+            <i data-lucide="x" style="width:12px;height:12px"></i>Rad etish
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+    lucide.createIcons();
+  }
+
+  async function approveUser(id) {
+    if (!confirm("Bu foydalanuvchini tasdiqlamoqchimisiz? Unga vaqtinchalik parol email orqali yuboriladi.")) return;
+    try {
+      const r = await SergakAuth.fetch(`/api/users/${id}/approve`, {method:'POST'});
+      if (!r.ok) {
+        const err = await r.json();
+        SergakApp.showToast('error', 'Xato', err.detail || "Tasdiqlab bo'lmadi");
+        return;
+      }
+      SergakApp.showToast('success', 'Tasdiqlandi', "Foydalanuvchi qo'shildi va emailga xabar yuborildi");
+      await loadUsers();
+    } catch (e) {
+      SergakApp.showToast('error', 'Xato', "Tarmoq xatosi");
+    }
+  }
+
+  async function rejectUser(id) {
+    if (!confirm("Bu so'rovni rad etmoqchimisiz? Foydalanuvchi ma'lumotlari o'chiriladi.")) return;
+    try {
+      const r = await SergakAuth.fetch(`/api/users/${id}/reject`, {method:'POST'});
+      if (!r.ok && r.status !== 204) {
+        const err = await r.json().catch(() => ({}));
+        SergakApp.showToast('error', 'Xato', err.detail || "Rad eta olmadi");
+        return;
+      }
+      SergakApp.showToast('success', 'Rad etildi', "So'rov o'chirildi");
+      await loadUsers();
+    } catch (e) {
+      SergakApp.showToast('error', 'Xato', "Tarmoq xatosi");
+    }
+  }
+
+  function editPending(id) {
+    // Reuse the edit modal but with role change before approving
+    const u = allUsers.concat([]).find(x => x.id === id);
+    // Need to fetch from pending list — find from DOM data
+    fetch('/api/users/pending', {headers: {Authorization: 'Bearer ' + SergakAuth.getToken()}})
+      .then(r => r.json())
+      .then(list => {
+        const p = list.find(x => x.id === id);
+        if (!p) return;
+        editingId = id;
+        document.getElementById('userModalTitle').textContent = "So'rovni ko'rib chiqish";
+        document.getElementById('userModalSubtitle').textContent = "Rolni o'zgartirib tasdiqlashingiz mumkin";
+        document.getElementById('userSaveText').textContent = "Saqlash (tasdiqlash uchun yuqoridagi tugmadan foydalaning)";
+        document.getElementById('userFullName').value = p.full_name;
+        document.getElementById('userEmail').value = p.email;
+        document.getElementById('userEmail').disabled = true;
+        document.getElementById('userDept').value = p.department_filter || '';
+        document.getElementById('userPassword').value = '';
+        selectRole(document.querySelector(`[data-role="${p.requested_role || 'operator'}"]`), p.requested_role || 'operator');
+        document.getElementById('userModalError').style.display = 'none';
+        SergakApp.openModal('modalUser');
+        lucide.createIcons();
+      });
+  }
+
+  function getInitials(name) {
+    return (name || '?').split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return 'Hech qachon';
+    const d = new Date(iso);
+    const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (sec < 60) return 'Hozir onlayn';
+    if (sec < 3600) return `${Math.floor(sec/60)} daqiqa oldin`;
+    if (sec < 86400) return `${Math.floor(sec/3600)} soat oldin`;
+    return `${Math.floor(sec/86400)} kun oldin`;
+  }
+
+  function renderUsers() {
+    const search = document.getElementById('userSearch').value.toLowerCase();
+    const roleF = document.getElementById('roleFilter').value;
+    const filtered = allUsers.filter(u => {
+      if (roleF && u.role !== roleF) return false;
+      if (search && !`${u.full_name} ${u.email} ${u.username}`.toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    // Stats
+    const cnt = {admin:0, manager:0, operator:0, auditor:0};
+    allUsers.forEach(u => cnt[u.role] = (cnt[u.role]||0) + 1);
+    document.getElementById('cntAdmin').textContent = cnt.admin;
+    document.getElementById('cntManager').textContent = cnt.manager;
+    document.getElementById('cntOperator').textContent = cnt.operator;
+    document.getElementById('cntAuditor').textContent = cnt.auditor;
+    document.getElementById('userCount').textContent = `${allUsers.length} ta foydalanuvchi · 4 ta rol`;
+
+    if (!filtered.length) {
+      document.getElementById('usersList').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)">Foydalanuvchi topilmadi</div>';
+      return;
+    }
+
+    const me = SergakAuth.getUser();
+    document.getElementById('usersList').innerHTML = filtered.map(u => {
+      const isMe = me && me.id === u.id;
+      const initials = getInitials(u.full_name);
+      const statusClass = u.active ? 'online' : 'offline';
+      const statusText = u.active ? 'Faol' : 'Bloklangan';
+      const colorHex = roleColors[u.role] || '3b82f6';
+      return `
+      <div class="users-row" style="${!u.active ? 'opacity:.55' : ''}">
+        <div class="user-avatar-img"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.username)}&backgroundColor=${colorHex}" alt=""></div>
+        <div>
+          <div class="user-cell-name">
+            <span class="user-status-dot ${statusClass}"></span>${u.full_name || u.username}
+            ${isMe ? '<span style="font-size:10px;color:var(--primary);font-weight:700;margin-left:6px">SIZ</span>' : ''}
+          </div>
+          <div class="user-cell-email">${u.email}</div>
+        </div>
+        <div><span class="role-badge role-${u.role}"><i data-lucide="${roleIcon[u.role]}" style="width:10px;height:10px"></i>${roleName[u.role]}</span></div>
+        <div style="font-size:12px;color:var(--text-muted)">${u.department_filter || "Hamma bo'limlar"}</div>
+        <div style="font-size:12px;color:${u.active?'var(--text)':'var(--text-muted)'}">${timeAgo(u.last_seen)}<div style="font-size:10px;color:${u.active?'var(--success)':'var(--danger)'};margin-top:2px">${statusText}</div></div>
+        <div style="display:flex;gap:5px">
+          <button class="icon-btn" style="width:30px;height:30px" onclick="openEditModal(${u.id})" title="Tahrirlash"><i data-lucide="edit-2" style="width:13px;height:13px"></i></button>
+          ${!isMe ? `
+          <button class="icon-btn" style="width:30px;height:30px" onclick="toggleLock(${u.id})" title="${u.active?'Bloklash':'Faollashtirish'}"><i data-lucide="${u.active?'lock':'unlock'}" style="width:13px;height:13px"></i></button>
+          <button class="icon-btn" style="width:30px;height:30px;color:var(--danger)" onclick="deleteUser(${u.id})" title="O'chirish"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>
+          ` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    lucide.createIcons();
+  }
+
+  function filterUsers() { renderUsers(); }
+
+  function selectRole(el, role) {
+    document.querySelectorAll('[data-role]').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    selectedRole = role;
+  }
+
+  function openCreateModal() {
+    editingId = null;
+    document.getElementById('userModalTitle').textContent = "Yangi foydalanuvchi";
+    document.getElementById('userModalSubtitle').textContent = "Foydalanuvchi qo'shing va emailga xabar yuboriladi";
+    document.getElementById('userSaveText').textContent = "Saqlash va emailga yuborish";
+    document.getElementById('userFullName').value = '';
+    document.getElementById('userEmail').value = '';
+    document.getElementById('userEmail').disabled = false;
+    document.getElementById('userDept').value = '';
+    document.getElementById('userPassword').value = '';
+    selectRole(document.querySelector('[data-role="manager"]'), 'manager');
+    document.getElementById('userModalError').style.display = 'none';
+    SergakApp.openModal('modalUser');
+    lucide.createIcons();
+  }
+
+  function openEditModal(id) {
+    const u = allUsers.find(x => x.id === id);
+    if (!u) return;
+    editingId = id;
+    document.getElementById('userModalTitle').textContent = "Foydalanuvchini tahrirlash";
+    document.getElementById('userModalSubtitle').textContent = u.email;
+    document.getElementById('userSaveText').textContent = "Saqlash";
+    document.getElementById('userFullName').value = u.full_name;
+    document.getElementById('userEmail').value = u.email;
+    document.getElementById('userEmail').disabled = true;
+    document.getElementById('userDept').value = u.department_filter || '';
+    document.getElementById('userPassword').value = '';
+    document.getElementById('userPassword').placeholder = "Parolni o'zgartirish uchun yangi parol";
+    selectRole(document.querySelector(`[data-role="${u.role}"]`), u.role);
+    document.getElementById('userModalError').style.display = 'none';
+    SergakApp.openModal('modalUser');
+    lucide.createIcons();
+  }
+
+  async function saveUser() {
+    const errEl = document.getElementById('userModalError');
+    errEl.style.display = 'none';
+    const full_name = document.getElementById('userFullName').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const department_filter = document.getElementById('userDept').value.trim();
+    const password = document.getElementById('userPassword').value;
+
+    if (!full_name || !email) {
+      errEl.style.display = 'block';
+      errEl.innerHTML = '<div class="info-box error" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:10px;border-radius:8px;color:var(--danger);font-size:12px">To\'liq ism va emailni to\'ldiring</div>';
+      return;
+    }
+
+    const btn = document.getElementById('userSaveBtn');
+    btn.disabled = true;
+    const oldText = document.getElementById('userSaveText').textContent;
+    document.getElementById('userSaveText').textContent = "Saqlanmoqda...";
+    try {
+      let r;
+      if (editingId) {
+        const body = {full_name, role: selectedRole, department_filter};
+        if (password) body.password = password;
+        r = await SergakAuth.fetch('/api/users/' + editingId, {method:'PUT', body});
+      } else {
+        const body = {full_name, email, role: selectedRole, department_filter};
+        if (password) body.password = password;
+        r = await SergakAuth.fetch('/api/users', {method:'POST', body});
+      }
+      if (!r.ok) {
+        const err = await r.json();
+        errEl.style.display = 'block';
+        errEl.innerHTML = `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:10px;border-radius:8px;color:var(--danger);font-size:12px">${err.detail || 'Xato'}</div>`;
+        btn.disabled = false;
+        document.getElementById('userSaveText').textContent = oldText;
+        return;
+      }
+      SergakApp.closeModal('modalUser');
+      SergakApp.showToast('success', editingId ? 'Saqlandi' : "Foydalanuvchi qo'shildi", editingId ? 'Ma\'lumotlar yangilandi' : `${email} ga xabar yuborildi`);
+      await loadUsers();
+    } catch (e) {
+      errEl.style.display = 'block';
+      errEl.innerHTML = '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:10px;border-radius:8px;color:var(--danger);font-size:12px">Tarmoq xatosi</div>';
+    } finally {
+      btn.disabled = false;
+      document.getElementById('userSaveText').textContent = oldText;
+    }
+  }
+
+  async function toggleLock(id) {
+    const u = allUsers.find(x => x.id === id);
+    if (!u) return;
+    if (!confirm(`${u.full_name} ni ${u.active ? 'bloklamoqchimisiz' : 'faollashtirmoqchimisiz'}?`)) return;
+    try {
+      const r = await SergakAuth.fetch(`/api/users/${id}/toggle-lock`, {method:'POST'});
+      if (!r.ok) {
+        const err = await r.json();
+        SergakApp.showToast('error', 'Xato', err.detail || 'Xato');
+        return;
+      }
+      SergakApp.showToast('success', 'OK', u.active ? 'Foydalanuvchi bloklandi' : 'Foydalanuvchi faollashtirildi');
+      await loadUsers();
+    } catch (e) {
+      SergakApp.showToast('error', 'Xato', "Tarmoq xatosi");
+    }
+  }
+
+  async function deleteUser(id) {
+    const u = allUsers.find(x => x.id === id);
+    if (!u) return;
+    if (!confirm(`${u.full_name} ni butunlay o'chirmoqchimisiz? Bu amal qaytarilmaydi.`)) return;
+    try {
+      const r = await SergakAuth.fetch(`/api/users/${id}`, {method:'DELETE'});
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        SergakApp.showToast('error', 'Xato', err.detail || "O'chirib bo'lmadi");
+        return;
+      }
+      SergakApp.showToast('success', 'O\'chirildi', `${u.full_name} olib tashlandi`);
+      await loadUsers();
+    } catch (e) {
+      SergakApp.showToast('error', 'Xato', "Tarmoq xatosi");
+    }
+  }
+
+  // Init
+  loadUsers();
+  lucide.createIcons();
+</script>
+</body>
+</html>

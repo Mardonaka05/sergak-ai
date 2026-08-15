@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Bo'limlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+      <div class="cameras-toolbar">
+        <button class="btn btn-primary"><i data-lucide="plus"></i>Yangi bo'lim</button>
+        <div style="margin-left:auto;font-size:13px;color:var(--text-muted)">6 ta bo'lim · 14 ta kamera · 47 ishchi</div>
+      </div>
+      <div class="cam-cards-grid" id="deptList"></div>
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/components.js"></script>
+<script>
+  SergakApp.mountShell('departments');
+  const list = document.getElementById('deptList');
+  list.innerHTML = SergakData.DEPARTMENTS.map(d=>{
+    const camCount = SergakData.CAMERAS.filter(c=>c.dept===d.key).length;
+    return `<div class="cam-card" style="cursor:pointer">
+      <div style="height:120px;background:linear-gradient(135deg,${d.color}33,${d.color}10);position:relative;display:flex;align-items:center;justify-content:center">
+        <i data-lucide="${d.icon}" style="width:42px;height:42px;color:${d.color}"></i>
+        <div style="position:absolute;top:10px;right:10px"><div class="dept-color-bar" style="background:${d.color};width:24px;height:4px"></div></div>
+      </div>
+      <div class="cam-card-info">
+        <div class="cam-card-name">${d.name}</div>
+        <div class="cam-card-location"><i data-lucide="camera"></i>${camCount} ta kamera · ${camCount*4} faol modul</div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:8px">
+          <button class="btn btn-secondary" style="flex:1;justify-content:center;padding:7px 12px;font-size:11px"><i data-lucide="settings-2"></i>Sozlamalar</button>
+          <button class="btn btn-secondary" style="padding:7px 10px"><i data-lucide="bar-chart-2"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+</script>
+</body>
+</html>

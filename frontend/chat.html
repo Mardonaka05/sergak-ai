@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI - Xabarlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+/* === Chat layout === */
+.chat-wrap{display:grid;grid-template-columns:340px 1fr;gap:0;height:calc(100vh - 90px);
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.chat-sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface-2);min-width:0}
+.chat-sidebar-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.chat-sidebar-head .title{font-weight:700;font-size:15px;color:var(--text);flex:1}
+.chat-search{padding:10px 14px;border-bottom:1px solid var(--border)}
+.chat-search input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:9px 12px 9px 36px;color:var(--text);font-size:13px;font-family:inherit;outline:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238d9bb8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:12px center}
+.chat-search input:focus{border-color:var(--primary)}
+.chat-list{flex:1;overflow-y:auto;min-height:0}
+.chat-item{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);
+  transition:background .12s;position:relative}
+.chat-item:hover{background:var(--surface-3)}
+.chat-item.active{background:rgba(59,130,246,.12)}
+.chat-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary)}
+.chat-item-avatar{width:46px;height:46px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--surface-3);
+  display:flex;align-items:center;justify-content:center;color:var(--text);font-weight:700;font-size:14px;
+  background:linear-gradient(135deg,#3b82f6,#06b6d4)}
+.chat-item-avatar img{width:100%;height:100%;object-fit:cover}
+.chat-item-body{flex:1;min-width:0}
+.chat-item-row1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chat-item-name{font-weight:600;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.chat-item-time{font-size:11px;color:var(--text-dim);flex-shrink:0}
+.chat-item-row2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+.chat-item-preview{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.chat-item-badge{background:var(--primary);color:#fff;font-size:10px;font-weight:700;border-radius:999px;
+  padding:2px 7px;min-width:18px;text-align:center;flex-shrink:0}
+.chat-item-badge.muted{background:var(--text-dim)}
+.chat-item-group-icon{position:absolute;left:42px;bottom:8px;background:var(--surface-2);border:2px solid var(--surface-2);
+  width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary)}
+.chat-item-group-icon i{width:11px;height:11px}
+
+/* Main pane */
+.chat-main{display:flex;flex-direction:column;background:var(--bg);min-width:0;background-image:
+  radial-gradient(circle at 15% 25%,rgba(59,130,246,.05),transparent 35%),
+  radial-gradient(circle at 85% 70%,rgba(6,182,212,.05),transparent 40%)}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+.chat-empty-icon{width:90px;height:90px;border-radius:50%;background:rgba(59,130,246,.08);
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.chat-empty-icon i{width:42px;height:42px;color:var(--primary)}
+.chat-empty h3{font-size:18px;color:var(--text);margin-bottom:6px}
+.chat-empty p{font-size:13px;color:var(--text-muted)}
+
+.chat-head{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface)}
+.chat-head-avatar{width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(135deg,#3b82f6,#06b6d4)}
+.chat-head-avatar img{width:100%;height:100%;object-fit:cover}
+.chat-head-info{flex:1;min-width:0}
+.chat-head-name{font-weight:700;font-size:15px;color:var(--text)}
+.chat-head-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.chat-head-actions{display:flex;gap:6px}
+
+.chat-messages{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:6px;min-height:0}
+.msg-date{align-self:center;background:rgba(0,0,0,.35);color:#ddd;font-size:11px;font-weight:600;
+  padding:4px 12px;border-radius:99px;margin:10px 0}
+.msg{display:flex;align-items:flex-end;gap:8px;max-width:70%;animation:msgIn .2s}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(135deg,#3b82f6,#06b6d4);visibility:hidden}
+.msg-avatar.visible{visibility:visible}
+.msg-avatar img{width:100%;height:100%;object-fit:cover}
+.msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:8px 12px 6px 12px;
+  position:relative;min-width:50px}
+.msg.mine .msg-bubble{background:linear-gradient(135deg,#3b82f6,#06b6d4);border-color:transparent;color:#fff}
+.msg-sender{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:2px}
+.msg.mine .msg-sender{display:none}
+.msg-text{font-size:14px;color:var(--text);line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
+.msg.mine .msg-text{color:#fff}
+.msg-text.deleted{font-style:italic;opacity:.7}
+.msg-meta{display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:3px}
+.msg-time{font-size:10px;color:var(--text-dim)}
+.msg.mine .msg-time{color:rgba(255,255,255,.85)}
+.msg-edited{font-size:10px;color:var(--text-dim);font-style:italic}
+.msg.mine .msg-edited{color:rgba(255,255,255,.7)}
+.msg-actions{position:absolute;top:-12px;right:8px;display:none;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:3px;gap:2px;box-shadow:0 4px 10px rgba(0,0,0,.3);z-index:2}
+.msg:hover .msg-actions{display:flex}
+.msg-actions button{width:24px;height:24px;border:none;background:none;color:var(--text-muted);cursor:pointer;
+  border-radius:5px;display:flex;align-items:center;justify-content:center}
+.msg-actions button:hover{background:var(--surface-3);color:var(--text)}
+.msg-actions button.danger:hover{color:var(--danger)}
+.msg-actions i{width:13px;height:13px}
+.msg-reply{background:rgba(0,0,0,.18);border-left:3px solid var(--primary);padding:5px 9px;border-radius:5px;
+  font-size:12px;margin-bottom:5px;cursor:pointer;max-width:100%;overflow:hidden}
+.msg-reply-name{font-weight:700;color:var(--primary);font-size:11px}
+.msg-reply-text{color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+.msg.mine .msg-reply{background:rgba(255,255,255,.18);border-left-color:#fff}
+.msg.mine .msg-reply-name,.msg.mine .msg-reply-text{color:#fff}
+.msg-image{margin-top:4px;max-width:280px;border-radius:8px;display:block;cursor:pointer}
+.msg-file{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);padding:8px 10px;border-radius:8px;
+  margin-top:4px;text-decoration:none;color:inherit;max-width:260px}
+.msg.mine .msg-file{background:rgba(255,255,255,.15)}
+.msg-file-icon{width:34px;height:34px;border-radius:8px;background:var(--primary);display:flex;align-items:center;
+  justify-content:center;color:#fff;flex-shrink:0}
+.msg-file-info{min-width:0;flex:1}
+.msg-file-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-file-size{font-size:10px;opacity:.7;margin-top:1px}
+
+/* Composer */
+.chat-composer{padding:12px 16px;background:var(--surface);border-top:1px solid var(--border)}
+.composer-reply{display:none;background:var(--surface-2);border-left:3px solid var(--primary);padding:6px 10px;
+  border-radius:6px;margin-bottom:8px;align-items:center;gap:10px;font-size:12px}
+.composer-reply.show{display:flex}
+.composer-reply-content{flex:1;min-width:0}
+.composer-reply-name{color:var(--primary);font-weight:700;font-size:11px}
+.composer-reply-text{color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+.composer-reply-close{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px}
+.composer-attach{display:none;align-items:center;gap:10px;padding:8px 12px;background:var(--surface-2);border-radius:8px;
+  margin-bottom:8px;font-size:12px}
+.composer-attach.show{display:flex}
+.composer-attach i{color:var(--primary)}
+.composer-row{display:flex;align-items:flex-end;gap:8px}
+.composer-input{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:18px;
+  padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;resize:none;min-height:40px;max-height:140px;
+  line-height:1.4}
+.composer-input:focus{border-color:var(--primary)}
+.composer-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--surface-2);color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s}
+.composer-btn:hover{background:var(--surface-3);color:var(--text)}
+.composer-send{background:var(--primary);color:#fff}
+.composer-send:hover{background:#2c6cd6;color:#fff}
+.composer-send:disabled{opacity:.5;cursor:not-allowed}
+
+/* New chat dropdown */
+.new-chat-menu{position:absolute;top:50px;right:14px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:200px;padding:6px;z-index:50;display:none}
+.new-chat-menu.show{display:block;animation:fadeIn .15s}
+.new-chat-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;background:none;border:none;
+  color:var(--text);font-family:inherit;font-size:13px;cursor:pointer;border-radius:7px;text-align:left}
+.new-chat-menu button:hover{background:var(--surface-2)}
+.new-chat-menu button i{width:15px;height:15px;color:var(--primary)}
+
+/* User picker modal */
+.user-pick{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .1s}
+.user-pick:hover{background:var(--surface-2)}
+.user-pick.selected{background:rgba(59,130,246,.12)}
+.user-pick-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#06b6d4);overflow:hidden;flex-shrink:0}
+.user-pick-avatar img{width:100%;height:100%;object-fit:cover}
+.user-pick-info{flex:1;min-width:0}
+.user-pick-name{font-size:13px;font-weight:600;color:var(--text)}
+.user-pick-meta{font-size:11px;color:var(--text-muted)}
+.user-pick-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-pick.selected .user-pick-check{background:var(--primary);border-color:var(--primary)}
+.user-pick.selected .user-pick-check::after{content:'';width:6px;height:10px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg);margin-bottom:2px}
+
+.image-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:1000;cursor:zoom-out}
+.image-lightbox.show{display:flex}
+.image-lightbox img{max-width:90%;max-height:90%;object-fit:contain}
+
+.role-mini{font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,.15);color:#7eb6ff;font-weight:700;margin-left:5px}
+.role-mini.admin{background:rgba(239,68,68,.15);color:#ff8585}
+.role-mini.manager{background:rgba(59,130,246,.15);color:#7eb6ff}
+.role-mini.operator{background:rgba(16,185,129,.15);color:#4adfa6}
+.role-mini.auditor{background:rgba(139,92,246,.15);color:#b599ff}
+
+/* Read receipts */
+.msg-ticks{display:inline-flex;align-items:center;margin-left:3px;color:rgba(255,255,255,.85)}
+.msg-ticks i{width:14px;height:14px;stroke-width:3}
+.msg-ticks.read{color:#7dd3fc} /* blue ticks when read */
+.msg-ticks.read i{color:#7dd3fc}
+.msg-ticks-2{display:inline-flex;margin-left:-7px}
+
+/* Audio messages */
+.msg-audio{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.2);padding:8px 10px;border-radius:14px;margin-top:4px;min-width:200px;max-width:280px}
+.msg.mine .msg-audio{background:rgba(255,255,255,.15)}
+.msg-audio-play{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.msg.mine .msg-audio-play{background:rgba(255,255,255,.25)}
+.msg-audio-play i{width:18px;height:18px;margin-left:1px}
+.msg-audio-bars{flex:1;display:flex;align-items:center;gap:2px;height:24px;min-width:0}
+.msg-audio-bar{flex:1;background:rgba(255,255,255,.35);min-height:4px;border-radius:1px;transition:background .1s}
+.msg.mine .msg-audio-bar{background:rgba(255,255,255,.45)}
+.msg-audio-bar.played{background:#fff}
+.msg-audio-time{font-size:11px;color:rgba(255,255,255,.85);font-family:'JetBrains Mono',monospace;min-width:36px;text-align:right}
+
+/* Voice recording UI */
+.composer-recording{display:none;align-items:center;gap:12px;padding:10px 14px;background:rgba(239,68,68,.12);border-radius:18px;
+  border:1px solid rgba(239,68,68,.3)}
+.composer-recording.show{display:flex}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:var(--danger);animation:recPulse 1s infinite}
+@keyframes recPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.rec-time{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--danger);flex:1}
+.rec-cancel,.rec-send{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.rec-cancel{background:var(--surface-3);color:var(--danger)}
+.rec-cancel:hover{background:rgba(239,68,68,.2)}
+.rec-send{background:var(--success);color:#fff}
+.rec-send:hover{background:#0ea571}
+
+.composer-btn.recording{background:var(--danger);color:#fff;animation:recBtnPulse 1.2s infinite}
+@keyframes recBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+
+/* Profile modal */
+.profile-avatar-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:18px}
+.profile-avatar-big{width:110px;height:110px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#3b82f6,#06b6d4);
+  margin-bottom:12px;position:relative;cursor:pointer;border:3px solid var(--border)}
+.profile-avatar-big img{width:100%;height:100%;object-fit:cover}
+.profile-avatar-big::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .15s;
+  border-radius:50%;display:flex;align-items:center;justify-content:center}
+.profile-avatar-big:hover::after{opacity:1}
+.profile-avatar-edit{position:absolute;bottom:0;right:0;background:var(--primary);color:#fff;border-radius:50%;
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:3px solid var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.4);z-index:2}
+.profile-avatar-edit i{width:14px;height:14px}
+.profile-readonly{padding:8px 12px;background:var(--surface-2);border-radius:8px;font-size:13px;color:var(--text-muted)}
+.profile-role-pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;
+  background:rgba(59,130,246,.15);color:#7eb6ff;margin-top:6px}
+.profile-role-pill.admin{background:rgba(239,68,68,.15);color:#ff8585}
+.profile-role-pill.manager{background:rgba(59,130,246,.15);color:#7eb6ff}
+.profile-role-pill.operator{background:rgba(16,185,129,.15);color:#4adfa6}
+.profile-role-pill.auditor{background:rgba(139,92,246,.15);color:#b599ff}
+
+/* Topbar profile button */
+.profile-mini-btn{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);
+  padding:5px 10px 5px 5px;border-radius:99px;cursor:pointer;transition:background .15s}
+.profile-mini-btn:hover{background:var(--surface-3)}
+.profile-mini-avatar{width:30px;height:30px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#3b82f6,#06b6d4);flex-shrink:0}
+.profile-mini-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-mini-name{font-size:12px;font-weight:600;color:var(--text)}
+
+@media (max-width:880px){
+  .chat-wrap{grid-template-columns:1fr}
+  .chat-sidebar.hidden-mobile{display:none}
+  .chat-main.hidden-mobile{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content" style="padding-top:10px">
+
+      <div class="chat-wrap">
+        <!-- LEFT: chat list -->
+        <div class="chat-sidebar" id="chatSidebar">
+          <div class="chat-sidebar-head">
+            <div class="title">Xabarlar</div>
+            <button class="profile-mini-btn" onclick="openProfileModal()" title="Profilim">
+              <div class="profile-mini-avatar"><img id="myMiniAvatar" src="" alt=""></div>
+              <span class="profile-mini-name" id="myMiniName">—</span>
+            </button>
+            <button class="icon-btn" style="width:34px;height:34px;margin-left:4px" onclick="toggleNewChatMenu(event)" title="Yangi chat">
+              <i data-lucide="plus"></i>
+            </button>
+            <div class="new-chat-menu" id="newChatMenu">
+              <button onclick="openNewDmModal()"><i data-lucide="user"></i>Yangi shaxsiy chat</button>
+              <button onclick="openNewGroupModal()"><i data-lucide="users"></i>Yangi guruh yaratish</button>
+            </div>
+          </div>
+          <div class="chat-search">
+            <input type="text" id="chatSearch" placeholder="Qidirish..." oninput="filterChats()">
+          </div>
+          <div class="chat-list" id="chatList">
+            <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px">
+              <i data-lucide="loader-2"></i><div style="margin-top:8px">Yuklanmoqda...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: messages -->
+        <div class="chat-main" id="chatMain">
+          <div class="chat-empty" id="chatEmpty">
+            <div class="chat-empty-icon"><i data-lucide="message-circle"></i></div>
+            <h3>Suhbatlashishni boshlang</h3>
+            <p>Chap tomondagi ro'yxatdan chatni tanlang yoki yangi suhbat boshlang</p>
+          </div>
+
+          <div id="chatActive" style="display:none;flex-direction:column;height:100%">
+            <div class="chat-head">
+              <div class="chat-head-avatar"><img id="headAvatar" src="" alt=""></div>
+              <div class="chat-head-info">
+                <div class="chat-head-name" id="headName">—</div>
+                <div class="chat-head-sub" id="headSub">—</div>
+              </div>
+              <div class="chat-head-actions">
+                <button class="icon-btn" onclick="showMembersModal()" id="btnMembers" title="A'zolar"><i data-lucide="users"></i></button>
+                <button class="icon-btn" onclick="confirmDeleteConv()" title="Chatni o'chirish" style="color:var(--danger)"><i data-lucide="trash-2"></i></button>
+              </div>
+            </div>
+
+            <div class="chat-messages" id="messagesBox"></div>
+
+            <div class="chat-composer">
+              <div class="composer-reply" id="composerReply">
+                <i data-lucide="reply" style="color:var(--primary);width:14px;height:14px"></i>
+                <div class="composer-reply-content">
+                  <div class="composer-reply-name" id="composerReplyName"></div>
+                  <div class="composer-reply-text" id="composerReplyText"></div>
+                </div>
+                <button class="composer-reply-close" onclick="cancelReply()"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+              </div>
+              <div class="composer-attach" id="composerAttach">
+                <i data-lucide="paperclip" style="width:14px;height:14px"></i>
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:600" id="attachName">—</div>
+                  <div style="font-size:10px;color:var(--text-muted)" id="attachSize"></div>
+                </div>
+                <button class="composer-reply-close" onclick="cancelAttach()"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+              </div>
+              <div class="composer-recording" id="composerRecording">
+                <div class="rec-dot"></div>
+                <div class="rec-time" id="recTime">0:00</div>
+                <button class="rec-cancel" onclick="cancelRecording()" title="Bekor qilish"><i data-lucide="trash-2"></i></button>
+                <button class="rec-send" onclick="stopAndSendRecording()" title="Yuborish"><i data-lucide="send"></i></button>
+              </div>
+              <div class="composer-row" id="composerRow">
+                <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(event)">
+                <button class="composer-btn" onclick="document.getElementById('fileInput').click()" title="Fayl biriktirish">
+                  <i data-lucide="paperclip"></i>
+                </button>
+                <textarea class="composer-input" id="composerInput" placeholder="Xabar yozing..." rows="1"
+                  oninput="autoGrow(this);toggleSendMic()" onkeydown="composerKey(event)"></textarea>
+                <button class="composer-btn" id="btnMic" onclick="startRecording()" title="Ovozli xabar yozish">
+                  <i data-lucide="mic"></i>
+                </button>
+                <button class="composer-btn composer-send" onclick="sendCurrent()" id="btnSend" title="Yuborish" style="display:none">
+                  <i data-lucide="send"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- New DM modal -->
+<div class="modal-overlay" id="modalNewDm">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Shaxsiy chat boshlash</div>
+        <div class="modal-subtitle">Foydalanuvchini tanlang</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalNewDm')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input class="form-input" id="dmSearch" placeholder="Qidirish..." oninput="filterUserPicker('dmUserList', this.value, false)">
+      <div id="dmUserList" style="margin-top:14px;max-height:340px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- New Group modal -->
+<div class="modal-overlay" id="modalNewGroup">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Yangi guruh yaratish</div>
+        <div class="modal-subtitle">Guruh nomini kiriting va a'zolarni tanlang</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalNewGroup')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Guruh nomi</label>
+        <input class="form-input" id="groupName" placeholder="Masalan: 'Eritish bo'limi xodimlari'">
+      </div>
+      <div class="form-group">
+        <label class="form-label">A'zolar (<span id="selectedCount">0</span> tanlandi)</label>
+        <input class="form-input" id="groupSearch" placeholder="Qidirish..." oninput="filterUserPicker('groupUserList', this.value, true)">
+        <div id="groupUserList" style="margin-top:10px;max-height:280px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SergakApp.closeModal('modalNewGroup')">Bekor</button>
+      <button class="btn btn-primary" onclick="createGroup()"><i data-lucide="check"></i>Guruh yaratish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Members modal -->
+<div class="modal-overlay" id="modalMembers">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="membersTitle">A'zolar</div>
+        <div class="modal-subtitle" id="membersSubtitle">—</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalMembers')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="membersList"></div>
+      <div id="addMembersWrap" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="toggleAddMembers()">
+          <i data-lucide="user-plus"></i><span id="addMembersText">A'zo qo'shish</span>
+        </button>
+        <div id="addMembersBlock" style="display:none;margin-top:10px">
+          <input class="form-input" id="memberAddSearch" placeholder="Qidirish..." oninput="filterUserPicker('memberAddList', this.value, true)">
+          <div id="memberAddList" style="margin-top:10px;max-height:220px;overflow-y:auto"></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center" onclick="addSelectedMembers()">
+            <i data-lucide="check"></i>Qo'shish
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile modal -->
+<div class="modal-overlay" id="modalProfile">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Mening profilim</div>
+        <div class="modal-subtitle">Ismingiz va rasmingizni tahrirlang</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalProfile')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-big" onclick="document.getElementById('avatarInput').click()" title="Rasmni o'zgartirish">
+          <img id="profileBigAvatar" src="" alt="">
+          <div class="profile-avatar-edit"><i data-lucide="camera"></i></div>
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
+        <div style="font-size:11px;color:var(--text-muted)">Rasmni o'zgartirish uchun bosing</div>
+        <div class="profile-role-pill" id="profileRolePill">—</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">To'liq ism</label>
+        <input class="form-input" id="profileName" placeholder="Ism Familiya">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <div class="profile-readonly" id="profileEmail">—</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Foydalanuvchi nomi</label>
+        <div class="profile-readonly" id="profileUsername">—</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Yangi parol (ixtiyoriy)</label>
+        <input class="form-input" type="password" id="profilePassword" placeholder="O'zgartirish uchun yangi parol kiriting">
+        <div class="form-hint">Bo'sh qoldirilsa, parol o'zgarmaydi. Kamida 6 belgi.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SergakApp.closeModal('modalProfile')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveProfile()" id="profileSaveBtn">
+        <i data-lucide="save"></i><span id="profileSaveText">Saqlash</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Image lightbox -->
+<div class="image-lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+SergakAuth.requireAuth();
+SergakApp.mountShell('chat');
+
+// ===== State =====
+let ME = SergakAuth.getUser();
+let CONVERSATIONS = [];
+let ACTIVE_CONV = null;
+let MESSAGES = [];
+let ALL_USERS = [];
+let SELECTED_USER_IDS = new Set();
+let REPLY_TO = null;
+let PENDING_ATTACH = null;
+let LAST_MSG_ID = 0;
+let convPoller = null;
+let msgPoller = null;
+
+const roleNames = {admin:'Administrator', manager:'Menejer', operator:'Operator', auditor:'Auditor'};
+
+// ===== Helpers =====
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+function avatarUrl(seed, customUrl){
+  if (customUrl) return customUrl;
+  return 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(seed||'user')+'&backgroundColor=3b82f6';
+}
+function userAvatar(u){
+  if (!u) return avatarUrl('?');
+  return avatarUrl(u.username || u.full_name, u.avatar_url);
+}
+function fmtTime(iso){
+  const d = new Date(iso);
+  return d.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function fmtLastSeen(iso){
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return fmtTime(iso);
+  const diff = (now - d) / 86400000;
+  if (diff < 7) return d.toLocaleDateString('uz-UZ',{weekday:'short'});
+  return d.toLocaleDateString('uz-UZ',{day:'numeric',month:'short'});
+}
+function fmtSize(bytes){
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+function dateLabel(iso){
+  const d = new Date(iso);
+  const now = new Date();
+  const today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const dDay = new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const diff = (today - dDay) / 86400000;
+  if (diff === 0) return 'Bugun';
+  if (diff === 1) return 'Kecha';
+  if (diff < 7) return d.toLocaleDateString('uz-UZ',{weekday:'long'});
+  return d.toLocaleDateString('uz-UZ',{day:'numeric',month:'long',year:'numeric'});
+}
+
+// ===== Conversation list =====
+async function loadConversations(initial){
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations');
+    if(!r.ok) return;
+    CONVERSATIONS = await r.json();
+    renderConversations();
+    if (initial && CONVERSATIONS.length && !ACTIVE_CONV) {
+      // Auto-open first
+      openConversation(CONVERSATIONS[0].id);
+    }
+    if (window.refreshUnreadBadge) refreshUnreadBadge();
+  }catch(e){console.error(e);}
+}
+
+function renderConversations(){
+  const q = (document.getElementById('chatSearch').value||'').toLowerCase();
+  const filtered = CONVERSATIONS.filter(c => !q || (c.name||'').toLowerCase().includes(q));
+  const list = document.getElementById('chatList');
+  if (!filtered.length) {
+    list.innerHTML = '<div style="padding:30px 14px;text-align:center;color:var(--text-muted);font-size:13px">Hech qanday chat topilmadi.<br><br>Yangi chat boshlash uchun yuqoridagi <b>+</b> tugmasini bosing.</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(c => {
+    const last = c.last_message;
+    let preview = "Hech qanday xabar yo'q";
+    if (last) {
+      if (last.deleted) preview = '<i style="opacity:.7">O\'chirilgan xabar</i>';
+      else if (last.attachment_type === 'image') preview = '📷 Rasm' + (last.text ? ': ' + escapeHtml(last.text) : '');
+      else if (last.attachment_type === 'audio') preview = '🎤 Ovozli xabar';
+      else if (last.attachment_type === 'file') preview = '📎 ' + escapeHtml(last.attachment_name);
+      else preview = escapeHtml((last.text||'').replace(/\n/g,' ')).slice(0,80);
+      if (c.type === 'group' && last.sender_id !== ME.id) preview = '<b>' + escapeHtml((last.sender_name||'').split(' ')[0]) + ':</b> ' + preview;
+    }
+    const time = c.last_message_at ? fmtLastSeen(c.last_message_at) : '';
+    const seed = c.avatar_seed || ('conv'+c.id);
+    const isActive = ACTIVE_CONV && ACTIVE_CONV.id === c.id;
+    // For DM, use the other user's avatar
+    let convAvatar = avatarUrl(seed);
+    if (c.type === 'dm') {
+      const other = c.members.find(m => m.id !== ME.id);
+      if (other) convAvatar = userAvatar(other);
+    }
+    return `
+    <div class="chat-item ${isActive?'active':''}" onclick="openConversation(${c.id})">
+      <div class="chat-item-avatar"><img src="${convAvatar}" alt=""></div>
+      ${c.type==='group' ? '<div class="chat-item-group-icon"><i data-lucide="users"></i></div>' : ''}
+      <div class="chat-item-body">
+        <div class="chat-item-row1">
+          <div class="chat-item-name">${escapeHtml(c.name||'Suhbat')}</div>
+          <div class="chat-item-time">${time}</div>
+        </div>
+        <div class="chat-item-row2">
+          <div class="chat-item-preview">${preview}</div>
+          ${c.unread_count > 0 ? '<div class="chat-item-badge">'+c.unread_count+'</div>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function filterChats(){ renderConversations(); }
+
+// ===== Open conversation =====
+async function openConversation(id){
+  const conv = CONVERSATIONS.find(c => c.id === id);
+  if (!conv) return;
+  ACTIVE_CONV = conv;
+  LAST_MSG_ID = 0;
+  MESSAGES = [];
+  REPLY_TO = null;
+  PENDING_ATTACH = null;
+  document.getElementById('composerReply').classList.remove('show');
+  document.getElementById('composerAttach').classList.remove('show');
+
+  document.getElementById('chatEmpty').style.display = 'none';
+  document.getElementById('chatActive').style.display = 'flex';
+  document.getElementById('headName').textContent = conv.name;
+  const subParts = [];
+  if (conv.type === 'group') {
+    subParts.push(conv.members.length + " a'zo");
+  } else {
+    const other = conv.members.find(m => m.id !== ME.id);
+    if (other) subParts.push(roleNames[other.role] || other.role);
+  }
+  document.getElementById('headSub').textContent = subParts.join(' · ');
+  let headAv = avatarUrl(conv.avatar_seed);
+  if (conv.type === 'dm') {
+    const other = conv.members.find(m => m.id !== ME.id);
+    if (other) headAv = userAvatar(other);
+  }
+  document.getElementById('headAvatar').src = headAv;
+
+  renderConversations();
+  await loadMessages(true);
+  await markRead();
+  startMsgPoller();
+}
+
+async function loadMessages(initial){
+  if (!ACTIVE_CONV) return;
+  try{
+    const url = '/api/chat/conversations/'+ACTIVE_CONV.id+'/messages' + (LAST_MSG_ID ? '?after_id='+LAST_MSG_ID : '?limit=100');
+    const r = await SergakAuth.fetch(url);
+    if (!r.ok) return;
+    const newMsgs = await r.json();
+    if (initial) MESSAGES = newMsgs;
+    else if (newMsgs.length) {
+      // Merge: replace if same id else append
+      newMsgs.forEach(m => {
+        const idx = MESSAGES.findIndex(x => x.id === m.id);
+        if (idx >= 0) MESSAGES[idx] = m;
+        else MESSAGES.push(m);
+      });
+    }
+    if (MESSAGES.length) LAST_MSG_ID = Math.max(...MESSAGES.map(m => m.id));
+    renderMessages(initial);
+    if (newMsgs.length && !initial) {
+      markRead();
+    }
+  }catch(e){console.error(e);}
+}
+
+function renderMessages(scrollToBottom){
+  const box = document.getElementById('messagesBox');
+  const wasBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 50;
+  let html = '';
+  let prevDate = '';
+  let prevSender = null;
+  MESSAGES.forEach((m, idx) => {
+    const d = new Date(m.created_at);
+    const dKey = d.toDateString();
+    if (dKey !== prevDate) {
+      html += '<div class="msg-date">'+dateLabel(m.created_at)+'</div>';
+      prevDate = dKey;
+      prevSender = null;
+    }
+    const mine = m.sender_id === ME.id;
+    const isGroup = ACTIVE_CONV.type === 'group';
+    const showAvatar = !mine && isGroup && prevSender !== m.sender_id;
+    prevSender = m.sender_id;
+
+    let bubbleContent = '';
+    if (m.deleted) {
+      bubbleContent = '<div class="msg-text deleted">O\'chirilgan xabar</div>';
+    } else {
+      // Reply preview
+      if (m.reply_to_id) {
+        const ref = MESSAGES.find(x => x.id === m.reply_to_id);
+        if (ref) {
+          let refText = ref.text || (ref.attachment_type==='image'?'📷 Rasm':(ref.attachment_type==='file'?'📎 '+ref.attachment_name:''));
+          bubbleContent += '<div class="msg-reply" onclick="scrollToMessage('+ref.id+')">'+
+            '<div class="msg-reply-name">'+escapeHtml(ref.sender_name||'?')+'</div>'+
+            '<div class="msg-reply-text">'+escapeHtml(refText).slice(0,80)+'</div>'+
+            '</div>';
+        }
+      }
+      if (!mine && isGroup) {
+        bubbleContent += '<div class="msg-sender">'+escapeHtml(m.sender_name)+'</div>';
+      }
+      if (m.text) {
+        bubbleContent += '<div class="msg-text">'+escapeHtml(m.text)+'</div>';
+      }
+      if (m.attachment_url && m.attachment_type === 'image') {
+        bubbleContent += '<img class="msg-image" src="'+m.attachment_url+'" alt="" onclick="openLightbox(\''+m.attachment_url+'\')">';
+      } else if (m.attachment_url && m.attachment_type === 'audio') {
+        // Audio player with bars
+        const bars = Array.from({length:24},()=>Math.floor(Math.random()*16)+4).map(h =>
+          '<div class="msg-audio-bar" style="height:'+h+'px"></div>').join('');
+        bubbleContent += '<div class="msg-audio" data-msg-id="'+m.id+'">'+
+          '<button class="msg-audio-play" onclick="toggleAudio('+m.id+',\''+m.attachment_url+'\')" id="audioBtn-'+m.id+'"><i data-lucide="play"></i></button>'+
+          '<div class="msg-audio-bars" id="audioBars-'+m.id+'">'+bars+'</div>'+
+          '<div class="msg-audio-time" id="audioTime-'+m.id+'">0:00</div>'+
+          '</div>';
+      } else if (m.attachment_url && m.attachment_type === 'file') {
+        bubbleContent += '<a class="msg-file" href="'+m.attachment_url+'" target="_blank" download="'+escapeHtml(m.attachment_name)+'">'+
+          '<div class="msg-file-icon"><i data-lucide="file"></i></div>'+
+          '<div class="msg-file-info"><div class="msg-file-name">'+escapeHtml(m.attachment_name)+'</div></div>'+
+          '</a>';
+      }
+    }
+    let actions = '';
+    if (!m.deleted) {
+      actions += '<button onclick="setReply('+m.id+')" title="Javob"><i data-lucide="reply"></i></button>';
+      if (mine) {
+        actions += '<button onclick="editMessage('+m.id+')" title="Tahrirlash"><i data-lucide="edit-2"></i></button>';
+      }
+      if (mine || ME.role === 'admin') {
+        actions += '<button class="danger" onclick="deleteMessage('+m.id+')" title="O\'chirish"><i data-lucide="trash-2"></i></button>';
+      }
+    }
+    // Read ticks for own messages
+    let ticksHtml = '';
+    if (mine && !m.deleted) {
+      if (m.read_by_all) {
+        ticksHtml = '<span class="msg-ticks read"><i data-lucide="check"></i><span class="msg-ticks-2"><i data-lucide="check"></i></span></span>';
+      } else {
+        ticksHtml = '<span class="msg-ticks"><i data-lucide="check"></i></span>';
+      }
+    }
+    let avatarHtml = '';
+    if (showAvatar) {
+      const avSrc = m.sender_avatar || avatarUrl(m.sender_name || 'u'+m.sender_id);
+      avatarHtml = '<div class="msg-avatar visible"><img src="'+avSrc+'" alt=""></div>';
+    } else if (!mine && isGroup) {
+      avatarHtml = '<div class="msg-avatar"></div>';
+    }
+    html += '<div class="msg '+(mine?'mine':'')+'" id="msg-'+m.id+'" data-id="'+m.id+'">'+
+      avatarHtml +
+      '<div class="msg-bubble">'+
+        bubbleContent +
+        '<div class="msg-meta">'+
+          (m.edited && !m.deleted ? '<span class="msg-edited">tahrirlandi</span>' : '') +
+          '<span class="msg-time">'+fmtTime(m.created_at)+'</span>'+
+          ticksHtml +
+        '</div>'+
+        (actions ? '<div class="msg-actions">'+actions+'</div>' : '') +
+      '</div>'+
+    '</div>';
+  });
+  box.innerHTML = html || '<div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px">Bu chatda hali xabar yo\'q. Suhbatlashishni boshlang!</div>';
+  lucide.createIcons();
+  if (scrollToBottom || wasBottom) {
+    setTimeout(() => { box.scrollTop = box.scrollHeight; }, 30);
+  }
+}
+
+function scrollToMessage(id){
+  const el = document.getElementById('msg-'+id);
+  if (el) {
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.style.background = 'rgba(59,130,246,.15)';
+    setTimeout(()=>{el.style.background='';}, 1500);
+  }
+}
+
+function openLightbox(url){
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+// ===== Send / edit / delete =====
+async function markRead(){
+  if (!ACTIVE_CONV) return;
+  try{
+    await SergakAuth.fetch('/api/chat/conversations/'+ACTIVE_CONV.id+'/read', {method:'POST'});
+    if (window.refreshUnreadBadge) refreshUnreadBadge();
+  }catch(e){}
+}
+
+function autoGrow(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+function composerKey(e){
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendCurrent();
+  }
+}
+
+async function sendCurrent(){
+  if (!ACTIVE_CONV) return;
+  const inp = document.getElementById('composerInput');
+  const text = inp.value.trim();
+  if (!text && !PENDING_ATTACH) return;
+
+  const body = {text, reply_to_id: REPLY_TO};
+  if (PENDING_ATTACH) {
+    body.attachment_url = PENDING_ATTACH.url;
+    body.attachment_type = PENDING_ATTACH.type;
+    body.attachment_name = PENDING_ATTACH.name;
+  }
+
+  inp.value = '';
+  autoGrow(inp);
+  cancelReply();
+  const oldAttach = PENDING_ATTACH;
+  cancelAttach();
+  toggleSendMic();
+
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations/'+ACTIVE_CONV.id+'/messages',
+      {method:'POST', body});
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({}));
+      SergakApp.showToast('error', 'Xato', err.detail || 'Yuborib bo\'lmadi');
+      return;
+    }
+    const msg = await r.json();
+    MESSAGES.push(msg);
+    LAST_MSG_ID = msg.id;
+    renderMessages(true);
+    // Refresh conversation list to update preview/time
+    loadConversations(false);
+  }catch(e){
+    SergakApp.showToast('error', 'Xato', "Tarmoq xatosi");
+  }
+}
+
+function setReply(id){
+  const m = MESSAGES.find(x => x.id === id);
+  if (!m) return;
+  REPLY_TO = id;
+  document.getElementById('composerReplyName').textContent = m.sender_name;
+  let txt = m.text || (m.attachment_type==='image'?'📷 Rasm':(m.attachment_type==='file'?'📎 '+m.attachment_name:''));
+  document.getElementById('composerReplyText').textContent = txt;
+  document.getElementById('composerReply').classList.add('show');
+  document.getElementById('composerInput').focus();
+}
+function cancelReply(){
+  REPLY_TO = null;
+  document.getElementById('composerReply').classList.remove('show');
+}
+
+async function editMessage(id){
+  const m = MESSAGES.find(x => x.id === id);
+  if (!m) return;
+  const newText = prompt('Xabarni tahrirlang:', m.text);
+  if (newText === null) return;
+  if (!newText.trim()) return;
+  try{
+    const r = await SergakAuth.fetch('/api/chat/messages/'+id, {method:'PUT', body:{text:newText.trim()}});
+    if (!r.ok) { SergakApp.showToast('error','Xato','Tahrirlab bo\'lmadi'); return; }
+    const updated = await r.json();
+    const idx = MESSAGES.findIndex(x => x.id === id);
+    if (idx >= 0) MESSAGES[idx] = updated;
+    renderMessages(false);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+async function deleteMessage(id){
+  if (!confirm("Xabarni o'chirmoqchimisiz?")) return;
+  try{
+    const r = await SergakAuth.fetch('/api/chat/messages/'+id, {method:'DELETE'});
+    if (!r.ok) { SergakApp.showToast('error','Xato',"O'chirib bo'lmadi"); return; }
+    const m = MESSAGES.find(x => x.id === id);
+    if (m) { m.deleted = true; m.text=''; m.attachment_url=''; }
+    renderMessages(false);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+async function handleFileSelect(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.size > 20*1024*1024) {
+    SergakApp.showToast('error','Xato','Fayl 20 MB dan katta');
+    e.target.value = '';
+    return;
+  }
+  // Upload
+  const fd = new FormData();
+  fd.append('file', f);
+  try{
+    const tok = SergakAuth.getToken();
+    const r = await fetch('/api/chat/upload', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+tok},
+      body: fd
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({}));
+      SergakApp.showToast('error','Xato',err.detail || 'Yuklab bo\'lmadi');
+      return;
+    }
+    const data = await r.json();
+    PENDING_ATTACH = data;
+    document.getElementById('attachName').textContent = data.name;
+    document.getElementById('attachSize').textContent = fmtSize(data.size) + ' · ' + (data.type==='image'?'Rasm':'Fayl');
+    document.getElementById('composerAttach').classList.add('show');
+    toggleSendMic();
+    lucide.createIcons();
+  }catch(err){
+    SergakApp.showToast('error','Xato','Tarmoq xatosi');
+  }
+  e.target.value = '';
+}
+function cancelAttach(){
+  PENDING_ATTACH = null;
+  document.getElementById('composerAttach').classList.remove('show');
+  toggleSendMic();
+}
+
+// ===== New chat =====
+function toggleNewChatMenu(e){
+  e.stopPropagation();
+  document.getElementById('newChatMenu').classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#newChatMenu') && !e.target.closest('[onclick*="toggleNewChatMenu"]')) {
+    document.getElementById('newChatMenu').classList.remove('show');
+  }
+});
+
+async function ensureUsers(){
+  if (ALL_USERS.length) return;
+  try{
+    const r = await SergakAuth.fetch('/api/chat/users');
+    if (r.ok) ALL_USERS = await r.json();
+  }catch(e){}
+}
+
+async function openNewDmModal(){
+  document.getElementById('newChatMenu').classList.remove('show');
+  await ensureUsers();
+  document.getElementById('dmSearch').value = '';
+  renderUserPicker('dmUserList', '', false, false);
+  SergakApp.openModal('modalNewDm');
+}
+
+async function openNewGroupModal(){
+  document.getElementById('newChatMenu').classList.remove('show');
+  await ensureUsers();
+  SELECTED_USER_IDS = new Set();
+  document.getElementById('groupName').value = '';
+  document.getElementById('groupSearch').value = '';
+  document.getElementById('selectedCount').textContent = '0';
+  renderUserPicker('groupUserList', '', true, false);
+  SergakApp.openModal('modalNewGroup');
+}
+
+function filterUserPicker(listId, q, multi){
+  renderUserPicker(listId, q, multi, listId === 'memberAddList');
+}
+
+function renderUserPicker(listId, q, multi, excludeExistingMembers){
+  q = (q||'').toLowerCase();
+  const existing = new Set();
+  if (excludeExistingMembers && ACTIVE_CONV) {
+    ACTIVE_CONV.members.forEach(m => existing.add(m.id));
+  }
+  const filtered = ALL_USERS.filter(u =>
+    !existing.has(u.id) &&
+    (!q || (u.full_name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q))
+  );
+  const list = document.getElementById(listId);
+  if (!filtered.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Foydalanuvchi topilmadi</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(u => {
+    const selected = multi && SELECTED_USER_IDS.has(u.id);
+    return `
+    <div class="user-pick ${selected?'selected':''}" onclick="${multi?'toggleUserPick':'pickUserForDm'}(${u.id},'${listId}')">
+      <div class="user-pick-avatar"><img src="${userAvatar(u)}" alt=""></div>
+      <div class="user-pick-info">
+        <div class="user-pick-name">${escapeHtml(u.full_name||u.username)}<span class="role-mini ${u.role}">${roleNames[u.role]||u.role}</span></div>
+        <div class="user-pick-meta">${escapeHtml(u.email)}</div>
+      </div>
+      ${multi ? '<div class="user-pick-check"></div>' : '<i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--text-muted)"></i>'}
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function pickUserForDm(id, listId){
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations/dm', {method:'POST', body:{user_id:id}});
+    if (!r.ok) {
+      const err = await r.json();
+      SergakApp.showToast('error','Xato', err.detail || "Boshlab bo'lmadi");
+      return;
+    }
+    const conv = await r.json();
+    SergakApp.closeModal('modalNewDm');
+    await loadConversations(false);
+    openConversation(conv.id);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+function toggleUserPick(id, listId){
+  if (SELECTED_USER_IDS.has(id)) SELECTED_USER_IDS.delete(id);
+  else SELECTED_USER_IDS.add(id);
+  document.getElementById('selectedCount').textContent = SELECTED_USER_IDS.size;
+  const sq = document.getElementById('groupSearch') ? document.getElementById('groupSearch').value : '';
+  const masq = document.getElementById('memberAddSearch') ? document.getElementById('memberAddSearch').value : '';
+  if (listId === 'groupUserList') renderUserPicker('groupUserList', sq, true, false);
+  else renderUserPicker('memberAddList', masq, true, true);
+}
+
+async function createGroup(){
+  const name = document.getElementById('groupName').value.trim();
+  if (!name) { SergakApp.showToast('error','Xato',"Guruh nomini kiriting"); return; }
+  if (SELECTED_USER_IDS.size < 1) { SergakApp.showToast('error','Xato',"Kamida 1 kishini tanlang"); return; }
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations/group',
+      {method:'POST', body:{name, member_ids: Array.from(SELECTED_USER_IDS)}});
+    if (!r.ok) {
+      const err = await r.json();
+      SergakApp.showToast('error','Xato', err.detail || "Yarata olmadi");
+      return;
+    }
+    const conv = await r.json();
+    SergakApp.closeModal('modalNewGroup');
+    await loadConversations(false);
+    openConversation(conv.id);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+// ===== Members =====
+function showMembersModal(){
+  if (!ACTIVE_CONV) return;
+  document.getElementById('membersTitle').textContent = ACTIVE_CONV.name;
+  document.getElementById('membersSubtitle').textContent = (ACTIVE_CONV.type==='group'?'Guruh · ':'Shaxsiy · ') + ACTIVE_CONV.members.length + " a'zo";
+  renderMembersList();
+  // Show add-member section only for group + I'm admin/creator/global-admin
+  const canAdd = ACTIVE_CONV.type === 'group' && (ME.role === 'admin' /* server enforces too */);
+  document.getElementById('addMembersWrap').style.display = canAdd ? 'block' : 'none';
+  document.getElementById('addMembersBlock').style.display = 'none';
+  SergakApp.openModal('modalMembers');
+}
+
+function renderMembersList(){
+  const list = document.getElementById('membersList');
+  list.innerHTML = ACTIVE_CONV.members.map(u => `
+    <div class="user-pick" style="cursor:default">
+      <div class="user-pick-avatar"><img src="${userAvatar(u)}" alt=""></div>
+      <div class="user-pick-info">
+        <div class="user-pick-name">${escapeHtml(u.full_name||u.username)}${u.id===ME.id?'<span class="role-mini" style="background:rgba(59,130,246,.2);color:#7eb6ff">SIZ</span>':''}<span class="role-mini ${u.role}">${roleNames[u.role]||u.role}</span></div>
+        <div class="user-pick-meta">${escapeHtml(u.email)}</div>
+      </div>
+      ${ACTIVE_CONV.type==='group' && u.id!==ME.id && ME.role==='admin' ?
+        '<button class="icon-btn" style="color:var(--danger);width:30px;height:30px" onclick="removeMember('+u.id+')" title="Chiqarish"><i data-lucide="user-minus" style="width:14px;height:14px"></i></button>' : ''}
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+async function toggleAddMembers(){
+  const block = document.getElementById('addMembersBlock');
+  if (block.style.display === 'none') {
+    await ensureUsers();
+    SELECTED_USER_IDS = new Set();
+    document.getElementById('memberAddSearch').value = '';
+    renderUserPicker('memberAddList', '', true, true);
+    block.style.display = 'block';
+    document.getElementById('addMembersText').textContent = "Bekor qilish";
+  } else {
+    block.style.display = 'none';
+    document.getElementById('addMembersText').textContent = "A'zo qo'shish";
+  }
+}
+
+async function addSelectedMembers(){
+  if (!ACTIVE_CONV || SELECTED_USER_IDS.size === 0) return;
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations/'+ACTIVE_CONV.id+'/members',
+      {method:'POST', body:{user_ids: Array.from(SELECTED_USER_IDS)}});
+    if (!r.ok) {
+      const err = await r.json();
+      SergakApp.showToast('error','Xato', err.detail || "Qo'sha olmadi");
+      return;
+    }
+    SergakApp.showToast('success','OK',"A'zolar qo'shildi");
+    SergakApp.closeModal('modalMembers');
+    await loadConversations(false);
+    if (ACTIVE_CONV) openConversation(ACTIVE_CONV.id);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+async function removeMember(uid){
+  if (!confirm("A'zoni chiqarmoqchimisiz?")) return;
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations/'+ACTIVE_CONV.id+'/members/'+uid, {method:'DELETE'});
+    if (!r.ok) { SergakApp.showToast('error','Xato',"Chiqarib bo'lmadi"); return; }
+    SergakApp.showToast('success','OK',"A'zo chiqarildi");
+    SergakApp.closeModal('modalMembers');
+    await loadConversations(false);
+    if (ACTIVE_CONV) openConversation(ACTIVE_CONV.id);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+async function confirmDeleteConv(){
+  if (!ACTIVE_CONV) return;
+  if (!confirm("Bu chatni butunlay o'chirmoqchimisiz? Hamma xabarlar yo'qoladi.")) return;
+  try{
+    const r = await SergakAuth.fetch('/api/chat/conversations/'+ACTIVE_CONV.id, {method:'DELETE'});
+    if (!r.ok) { SergakApp.showToast('error','Xato',"O'chirib bo'lmadi"); return; }
+    SergakApp.showToast('success','OK',"Chat o'chirildi");
+    ACTIVE_CONV = null;
+    document.getElementById('chatActive').style.display = 'none';
+    document.getElementById('chatEmpty').style.display = 'flex';
+    stopMsgPoller();
+    await loadConversations(false);
+  }catch(e){ SergakApp.showToast('error','Xato','Tarmoq xatosi'); }
+}
+
+// ===== Polling =====
+function startMsgPoller(){
+  stopMsgPoller();
+  msgPoller = setInterval(() => {
+    if (ACTIVE_CONV) loadMessages(false);
+  }, 3000);
+}
+function stopMsgPoller(){
+  if (msgPoller) { clearInterval(msgPoller); msgPoller = null; }
+}
+
+function startConvPoller(){
+  if (convPoller) return;
+  convPoller = setInterval(() => loadConversations(false), 5000);
+}
+
+// ===== Toggle send vs mic button =====
+function toggleSendMic(){
+  const inp = document.getElementById('composerInput');
+  const hasText = inp.value.trim().length > 0;
+  document.getElementById('btnMic').style.display = (hasText || PENDING_ATTACH) ? 'none' : 'flex';
+  document.getElementById('btnSend').style.display = (hasText || PENDING_ATTACH) ? 'flex' : 'none';
+}
+
+// ===== Voice recording =====
+let mediaRecorder = null;
+let recChunks = [];
+let recStartTime = 0;
+let recTimer = null;
+let recStream = null;
+
+async function startRecording(){
+  if (!ACTIVE_CONV) { SergakApp.showToast('error','Xato','Avval chat tanlang'); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    SergakApp.showToast('error','Xato','Brauzeringiz mikrofonni qollab-quvvatlamaydi');
+    return;
+  }
+  try {
+    recStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    let mimeType = 'audio/webm;codecs=opus';
+    if (!MediaRecorder.isTypeSupported(mimeType)) {
+      mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
+                 MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+    }
+    mediaRecorder = mimeType ? new MediaRecorder(recStream, {mimeType}) : new MediaRecorder(recStream);
+    recChunks = [];
+    mediaRecorder.ondataavailable = e => { if (e.data.size) recChunks.push(e.data); };
+    mediaRecorder.start();
+    recStartTime = Date.now();
+    document.getElementById('composerRecording').classList.add('show');
+    document.getElementById('composerRow').style.display = 'none';
+    recTimer = setInterval(() => {
+      const sec = Math.floor((Date.now()-recStartTime)/1000);
+      document.getElementById('recTime').textContent = Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+      if (sec >= 300) stopAndSendRecording(); // 5 min max
+    }, 200);
+    lucide.createIcons();
+  } catch (e) {
+    SergakApp.showToast('error','Xato','Mikrofonga ruxsat berilmadi: '+e.message);
+    cleanupRecording();
+  }
+}
+
+function cleanupRecording(){
+  if (recTimer) { clearInterval(recTimer); recTimer = null; }
+  if (recStream) { recStream.getTracks().forEach(t => t.stop()); recStream = null; }
+  mediaRecorder = null;
+  recChunks = [];
+  document.getElementById('composerRecording').classList.remove('show');
+  document.getElementById('composerRow').style.display = 'flex';
+}
+
+function cancelRecording(){
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try { mediaRecorder.stop(); } catch(e){}
+  }
+  cleanupRecording();
+}
+
+function stopAndSendRecording(){
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+  const duration = Math.floor((Date.now()-recStartTime)/1000);
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(recChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
+    cleanupRecording();
+    if (duration < 1) { SergakApp.showToast('error','Xato','Ovozli xabar juda qisqa'); return; }
+    // Upload
+    const ext = (mediaRecorder && mediaRecorder.mimeType && mediaRecorder.mimeType.includes('mp4')) ? 'mp4' : 'webm';
+    const fname = 'voice-'+Date.now()+'.'+ext;
+    const fd = new FormData();
+    fd.append('file', blob, fname);
+    try {
+      const tok = SergakAuth.getToken();
+      const r = await fetch('/api/chat/upload', {method:'POST', headers:{'Authorization':'Bearer '+tok}, body: fd});
+      if (!r.ok) { SergakApp.showToast('error','Xato',"Yuborib bo'lmadi"); return; }
+      const upl = await r.json();
+      // Send as message
+      const m = await SergakAuth.fetch('/api/chat/conversations/'+ACTIVE_CONV.id+'/messages', {
+        method:'POST',
+        body:{text:'', attachment_url: upl.url, attachment_type: 'audio', attachment_name: fname}
+      });
+      if (!m.ok) { SergakApp.showToast('error','Xato','Xabar yuborilmadi'); return; }
+      const msg = await m.json();
+      MESSAGES.push(msg);
+      LAST_MSG_ID = msg.id;
+      renderMessages(true);
+      loadConversations(false);
+    } catch (e) {
+      SergakApp.showToast('error','Xato','Tarmoq xatosi');
+    }
+  };
+  mediaRecorder.stop();
+}
+
+// ===== Audio playback =====
+let currentAudio = null;
+let currentAudioId = null;
+function toggleAudio(msgId, url){
+  if (currentAudio && currentAudioId === msgId) {
+    if (currentAudio.paused) currentAudio.play();
+    else currentAudio.pause();
+    return;
+  }
+  // Stop previous
+  if (currentAudio) {
+    currentAudio.pause();
+    const prevBtn = document.getElementById('audioBtn-'+currentAudioId);
+    if (prevBtn) prevBtn.innerHTML = '<i data-lucide="play"></i>';
+  }
+  const audio = new Audio(url);
+  currentAudio = audio;
+  currentAudioId = msgId;
+  const btn = document.getElementById('audioBtn-'+msgId);
+  const timeEl = document.getElementById('audioTime-'+msgId);
+  const barsEl = document.getElementById('audioBars-'+msgId);
+  audio.addEventListener('loadedmetadata', () => {
+    if (timeEl) timeEl.textContent = fmtAudioTime(audio.duration);
+  });
+  audio.addEventListener('play', () => {
+    if (btn) { btn.innerHTML = '<i data-lucide="pause"></i>'; lucide.createIcons(); }
+  });
+  audio.addEventListener('pause', () => {
+    if (btn) { btn.innerHTML = '<i data-lucide="play"></i>'; lucide.createIcons(); }
+  });
+  audio.addEventListener('timeupdate', () => {
+    if (timeEl) timeEl.textContent = fmtAudioTime(audio.currentTime) + ' / ' + fmtAudioTime(audio.duration || 0);
+    if (barsEl && audio.duration) {
+      const pct = audio.currentTime / audio.duration;
+      const bars = barsEl.children;
+      const cutoff = Math.floor(bars.length * pct);
+      for (let i = 0; i < bars.length; i++) {
+        if (i <= cutoff) bars[i].classList.add('played');
+        else bars[i].classList.remove('played');
+      }
+    }
+  });
+  audio.addEventListener('ended', () => {
+    if (btn) { btn.innerHTML = '<i data-lucide="play"></i>'; lucide.createIcons(); }
+    if (barsEl) Array.from(barsEl.children).forEach(b => b.classList.remove('played'));
+    if (timeEl) timeEl.textContent = fmtAudioTime(audio.duration);
+    currentAudio = null; currentAudioId = null;
+  });
+  audio.play().catch(err => {
+    SergakApp.showToast('error','Xato',"Audio ijro etib bo'lmadi");
+  });
+}
+function fmtAudioTime(s){
+  s = Math.max(0, Math.floor(s||0));
+  return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+}
+
+// ===== Profile modal =====
+function refreshMyMini(){
+  const me = SergakAuth.getUser();
+  if (!me) return;
+  document.getElementById('myMiniAvatar').src = userAvatar(me);
+  document.getElementById('myMiniName').textContent = (me.full_name || me.username || '').split(' ')[0];
+}
+
+async function openProfileModal(){
+  // Fetch fresh /me
+  try {
+    const r = await SergakAuth.fetch('/api/auth/me');
+    if (r.ok) {
+      const u = await r.json();
+      // Merge with existing session
+      const existing = SergakAuth.getUser() || {};
+      const merged = {...existing, ...u};
+      SergakAuth.setSession(SergakAuth.getToken(), merged);
+      ME = merged;
+    }
+  } catch(e){}
+  const me = SergakAuth.getUser();
+  document.getElementById('profileBigAvatar').src = userAvatar(me);
+  document.getElementById('profileName').value = me.full_name || '';
+  document.getElementById('profileEmail').textContent = me.email || '—';
+  document.getElementById('profileUsername').textContent = '@' + (me.username || '');
+  document.getElementById('profilePassword').value = '';
+  const pill = document.getElementById('profileRolePill');
+  pill.textContent = roleNames[me.role] || me.role;
+  pill.className = 'profile-role-pill ' + me.role;
+  SergakApp.openModal('modalProfile');
+  lucide.createIcons();
+}
+
+async function uploadAvatar(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) { SergakApp.showToast('error','Xato','Faqat rasm yuklang'); return; }
+  if (f.size > 5*1024*1024) { SergakApp.showToast('error','Xato','Rasm 5 MB dan katta'); return; }
+
+  // 1) Darhol mahalliy preview ko'rsatish (server javobini kutmasdan)
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('profileBigAvatar').src = ev.target.result;
+  };
+  reader.readAsDataURL(f);
+
+  // 2) Serverga yuklash
+  SergakApp.showToast('success','Yuklanmoqda','Rasm serverga jo\'natilmoqda...');
+  const fd = new FormData();
+  fd.append('file', f);
+  try {
+    const tok = SergakAuth.getToken();
+    const r = await fetch('/api/chat/upload', {method:'POST', headers:{'Authorization':'Bearer '+tok}, body: fd});
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({detail: 'HTTP '+r.status}));
+      SergakApp.showToast('error','Yuklash xato', err.detail || "Yuklab bo'lmadi");
+      return;
+    }
+    const upl = await r.json();
+    // Real server URL ni saqlaymiz (Saqlash bosilganda DB ga yoziladi)
+    document.getElementById('profileBigAvatar').src = upl.url;
+    document.getElementById('profileBigAvatar').dataset.newUrl = upl.url;
+    SergakApp.showToast('success','Tayyor','Rasm yuklandi. Endi "Saqlash" tugmasini bosing');
+  } catch (err) {
+    SergakApp.showToast('error','Xato','Tarmoq xatosi: ' + err.message);
+  }
+  e.target.value = '';
+}
+
+async function saveProfile(){
+  const name = document.getElementById('profileName').value.trim();
+  if (!name || name.length < 2) { SergakApp.showToast('error','Xato',"Ism kamida 2 belgi"); return; }
+  const pw = document.getElementById('profilePassword').value;
+  if (pw && pw.length < 6) { SergakApp.showToast('error','Xato',"Parol kamida 6 belgi"); return; }
+  const newAvatarUrl = document.getElementById('profileBigAvatar').dataset.newUrl;
+  const body = {full_name: name};
+  if (newAvatarUrl !== undefined) body.avatar_url = newAvatarUrl;
+  if (pw) body.password = pw;
+  document.getElementById('profileSaveText').textContent = "Saqlanmoqda...";
+  try {
+    const r = await SergakAuth.fetch('/api/auth/me', {method:'PUT', body});
+    if (!r.ok) {
+      const err = await r.json();
+      SergakApp.showToast('error','Xato', err.detail || "Saqlab bo'lmadi");
+      document.getElementById('profileSaveText').textContent = "Saqlash";
+      return;
+    }
+    const updated = await r.json();
+    const existing = SergakAuth.getUser() || {};
+    SergakAuth.setSession(SergakAuth.getToken(), {...existing, ...updated});
+    ME = SergakAuth.getUser();
+    SergakApp.closeModal('modalProfile');
+    SergakApp.showToast('success','OK','Profil yangilandi');
+    document.getElementById('profileSaveText').textContent = "Saqlash";
+    delete document.getElementById('profileBigAvatar').dataset.newUrl;
+    refreshMyMini();
+    // Refresh chats so own avatar appears everywhere
+    loadConversations(false);
+  } catch (e) {
+    SergakApp.showToast('error','Xato','Tarmoq xatosi');
+    document.getElementById('profileSaveText').textContent = "Saqlash";
+  }
+}
+
+// ===== Init =====
+refreshMyMini();
+loadConversations(true);
+startConvPoller();
+window.addEventListener('beforeunload', () => { stopMsgPoller(); if(convPoller) clearInterval(convPoller); });
+lucide.createIcons();
+</script>
+</body>
+</html>

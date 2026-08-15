@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Kameralar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.3 } }
+  @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+  .cam-card:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 6px 20px rgba(59,130,246,.15); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+
+      <div class="cameras-toolbar">
+        <button class="btn btn-primary" onclick="openNvrModal()"><i data-lucide="server"></i>NVR'ga ulanish</button>
+        <button class="btn btn-secondary" onclick="SergakApp.openModal('modalAddCamera')"><i data-lucide="plus"></i>Yangi kamera</button>
+        <button class="btn btn-secondary" onclick="SergakApp.openModal('modalScan')"><i data-lucide="radar"></i>Tarmoqni skanerlash</button>
+        <div class="toolbar-filter"><i data-lucide="filter"></i><select><option>Barcha bo'limlar</option><option>Eritish</option><option>Pechkaxona</option><option>Ombor</option></select></div>
+        <div class="toolbar-filter"><i data-lucide="activity"></i><select><option>Barcha holatlar</option><option>Onlayn</option><option>Ofllayn</option></select></div>
+        <div class="topbar-search" style="margin-left:auto;width:240px">
+          <i data-lucide="search"></i><input type="text" placeholder="Kamera nomi...">
+        </div>
+      </div>
+
+      <div id="camerasContainer"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Camera Modal -->
+<div class="modal-overlay" id="modalAddCamera">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Yangi kamera qo'shish</div>
+        <div class="modal-subtitle" id="addCamSubtitle">Qaysi yo'l bilan qo'shamiz?</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalAddCamera')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="wizard-steps">
+        <div class="wizard-step active" id="wizStep1"></div>
+        <div class="wizard-step" id="wizStep2"></div>
+        <div class="wizard-step" id="wizStep3"></div>
+      </div>
+
+      <div id="wizardPanel1">
+        <div class="method-card recommended" onclick="goToWizard(2)">
+          <div class="method-card-icon"><i data-lucide="radar"></i></div>
+          <div class="method-card-content">
+            <div class="method-card-title">Avtomatik skanerlash <span class="recommended-tag">Tavsiya</span></div>
+            <div class="method-card-desc">ONVIF protokoli orqali tarmoqdagi kameralarni avtomatik aniqlaydi (5-10 sek)</div>
+          </div>
+          <i data-lucide="chevron-right" style="color:var(--text-muted)"></i>
+        </div>
+        <div class="method-card" onclick="goToWizard(3)">
+          <div class="method-card-icon" style="background:var(--surface-3);box-shadow:none"><i data-lucide="globe"></i></div>
+          <div class="method-card-content">
+            <div class="method-card-title">Qo'lda IP/RTSP kiritish</div>
+            <div class="method-card-desc">Agar kamera ONVIF qo'llab-quvvatlamasa</div>
+          </div>
+          <i data-lucide="chevron-right" style="color:var(--text-muted)"></i>
+        </div>
+        <div class="method-card" onclick="goToWizard(3)">
+          <div class="method-card-icon" style="background:var(--surface-3);box-shadow:none"><i data-lucide="upload"></i></div>
+          <div class="method-card-content">
+            <div class="method-card-title">CSV faylidan import</div>
+            <div class="method-card-desc">Ko'p kamerani bir vaqtda</div>
+          </div>
+          <i data-lucide="chevron-right" style="color:var(--text-muted)"></i>
+        </div>
+      </div>
+
+      <div id="wizardPanel2" style="display:none">
+        <div id="scanRunningView">
+          <div class="scan-progress">
+            <div class="scan-radar"><div class="scan-sweep"></div><div class="scan-center"></div><div class="scan-radar-inner"></div></div>
+            <div class="scan-text">Tarmoq haqiqiy skanerlanmoqda...</div>
+            <div class="scan-meta" id="scanProgressText">Tarmoq aniqlanmoqda...</div>
+            <div style="margin-top:10px;font-size:11px;color:var(--text-dim);max-width:400px;text-align:center">
+              ONVIF protokol orqali kameralarni qidirmoqda. 5-15 sek davom etadi.
+            </div>
+          </div>
+        </div>
+        <div id="scanResultsView" style="display:none">
+          <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;color:var(--text-muted)">Topilgan kameralar: <strong style="color:var(--text)" id="foundCount">0</strong></div>
+            <button class="btn btn-secondary" onclick="startScan()" style="padding:6px 12px;font-size:11px"><i data-lucide="refresh-cw"></i>Qayta skan</button>
+          </div>
+          <div id="foundCamerasList"></div>
+        </div>
+      </div>
+
+      <div id="wizardPanel3" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Kamera nomi <span class="required">*</span></label>
+            <input class="form-input" placeholder="masalan, Eritish-2 Asosiy pech" value="Eritish-2 Asosiy pech">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bo'lim <span class="required">*</span></label>
+            <select class="form-select">
+              <option>Eritish bo'limi</option><option>Pechkaxona</option><option>Ombor</option><option>Quyish bo'limi</option>
+              <option>+ Yangi bo'lim yaratish</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Joylashuv izohi</label>
+            <input class="form-input" value="Shimoliy burchak, asosiy pech yonida">
+          </div>
+          <div class="form-group">
+            <label class="form-label">RTSP URL</label>
+            <input class="form-input" value="rtsp://192.168.1.102:554/Streaming/Channels/101" style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:6px">
+          <label class="form-label">AI Modullari <span class="required">*</span></label>
+          <div class="modules-grid" id="moduleTogglesGrid"></div>
+        </div>
+
+        <div class="threshold-slider">
+          <div class="slider-row">
+            <div class="slider-label"><i data-lucide="target" style="width:13px;height:13px"></i>Aniqlik chegarasi</div>
+            <span class="slider-value" id="thresholdValue">65%</span>
+          </div>
+          <input type="range" min="30" max="95" value="65" oninput="document.getElementById('thresholdValue').innerText=this.value+'%'">
+          <div class="form-hint">Quyiroq qiymat = ko'proq aniqlash, ko'proq false alarm.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="wizBack" onclick="goToWizard(1)" style="display:none"><i data-lucide="chevron-left"></i>Orqaga</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="SergakApp.closeModal('modalAddCamera')">Bekor</button>
+        <button class="btn btn-primary" id="wizNext" onclick="goToWizard('next')"><span id="wizNextText">Davom etish</span><i data-lucide="chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scan Modal -->
+<div class="modal-overlay" id="modalScan">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Tarmoq skanerlash</div>
+        <div class="modal-subtitle">Lokal tarmoqdagi barcha kameralarni avtomatik aniqlash</div>
+      </div>
+      <button class="modal-close" onclick="SergakApp.closeModal('modalScan')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="quickScanRunning">
+        <div class="scan-progress">
+          <div class="scan-radar"><div class="scan-sweep"></div><div class="scan-center"></div><div class="scan-radar-inner"></div></div>
+          <div class="scan-text">Tarmoq haqiqiy skanerlanmoqda...</div>
+          <div class="scan-meta" id="quickScanMeta">Tarmoq aniqlanmoqda...</div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-dim);max-width:400px;text-align:center">
+            ONVIF (UDP multicast) + RTSP/HTTP port scan ishlamoqda. Bu 5-15 soniya davom etishi mumkin.
+          </div>
+        </div>
+      </div>
+      <div id="quickScanResults" style="display:none">
+        <div style="margin-bottom:14px;padding:12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:var(--radius-sm);display:flex;align-items:center;gap:10px">
+          <i data-lucide="check-circle-2" style="color:var(--success);width:18px;height:18px"></i>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:13px;color:var(--text)">Skanerlash yakunlandi</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px"><span id="qsFound">5</span> ta yangi · <span id="qsExisting">3</span> ta avval qo'shilgan</div>
+          </div>
+          <button class="btn btn-ghost" onclick="startQuickScan()" style="padding:6px 10px;font-size:11px"><i data-lucide="refresh-cw"></i></button>
+        </div>
+        <div id="quickFoundList"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SergakApp.closeModal('modalScan')">Yopish</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-secondary"><i data-lucide="check-square"></i>Hammasini tanlash</button>
+        <button class="btn btn-primary"><i data-lucide="plus"></i>Tanlanganlarni qo'shish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NVR ULANISH MODAL ============ -->
+<div class="modal-overlay" id="modalNvr">
+  <div class="modal lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title"><i data-lucide="server" style="width:18px;height:18px;vertical-align:-3px"></i> NVR'ga ulanish</div>
+        <div class="modal-subtitle">NVR IP manzil, login va parolni kiriting — barcha kameralar avtomatik chiqadi</div>
+      </div>
+      <button class="modal-close" onclick="closeNvrModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- STEP 1: Form -->
+      <div id="nvrStep1">
+        <div style="padding:14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:var(--radius-sm);margin-bottom:18px;display:flex;gap:12px">
+          <i data-lucide="info" style="color:#3b82f6;width:18px;height:18px;flex-shrink:0;margin-top:2px"></i>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5">
+            Hikvision, Dahua va ONVIF NVR'lar qo'llab-quvvatlanadi. Kompyuter NVR bilan bir tarmoqda bo'lishi kerak (192.168.x.x).
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">NVR IP manzili <span class="required">*</span></label>
+            <input class="form-input" id="nvrIp" placeholder="masalan, 192.168.1.64" value="192.168.1.64" style="font-family:'JetBrains Mono',monospace">
+            <div class="form-hint">NVR'ning lokal IP manzili (router yoki NVR ekranidan ko'rinadi)</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">HTTP port</label>
+            <input class="form-input" id="nvrPort" placeholder="80" value="80" style="font-family:'JetBrains Mono',monospace">
+            <div class="form-hint">Odatda 80 (Hikvision/Dahua). Ba'zilarida 8000</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Login (username) <span class="required">*</span></label>
+            <input class="form-input" id="nvrUser" placeholder="admin" value="admin" autocomplete="off">
+            <div class="form-hint">NVR admin login (default: admin)</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parol <span class="required">*</span></label>
+            <input class="form-input" id="nvrPass" type="password" placeholder="••••••••" autocomplete="new-password">
+            <div class="form-hint">NVR admin paroli</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">RTSP port</label>
+            <input class="form-input" id="nvrRtspPort" value="554" style="font-family:'JetBrains Mono',monospace">
+            <div class="form-hint">Odatda 554 (o'zgartirmang)</div>
+          </div>
+        </div>
+
+        <div id="nvrError" style="display:none;margin-top:12px;padding:10px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--radius-sm);color:#ef4444;font-size:12px"></div>
+      </div>
+
+      <!-- STEP 2: Connecting -->
+      <div id="nvrStep2" style="display:none;text-align:center;padding:40px 20px">
+        <div class="scan-radar" style="margin:0 auto"><div class="scan-sweep"></div><div class="scan-center"></div><div class="scan-radar-inner"></div></div>
+        <div style="margin-top:18px;font-size:14px;color:var(--text);font-weight:600">NVR'ga ulanmoqda...</div>
+        <div id="nvrConnectStep" style="margin-top:8px;font-size:12px;color:var(--text-muted)">IP manzil tekshirilmoqda</div>
+        <div style="margin-top:20px;font-size:11px;color:var(--text-dim);max-width:380px;margin-left:auto;margin-right:auto;line-height:1.6">
+          Hikvision ISAPI → Dahua HTTP API → ONVIF protokollari tartibida sinab ko'riladi.
+        </div>
+      </div>
+
+      <!-- STEP 3: Results (channels list) -->
+      <div id="nvrStep3" style="display:none">
+        <div style="padding:12px 14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;gap:10px">
+          <i data-lucide="check-circle-2" style="color:#10b981;width:18px;height:18px"></i>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:13px;color:var(--text)">NVR ulanish muvaffaqiyatli!</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="nvrInfo">—</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;color:var(--text);font-weight:600">Topilgan kameralar: <span id="nvrChannelCount" style="color:#3b82f6">0</span></div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="nvrSelectAll(true)"><i data-lucide="check-square"></i>Hammasi</button>
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="nvrSelectAll(false)"><i data-lucide="square"></i>Hech qaysi</button>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">Qaysi bo'limga qo'shamiz?</label>
+            <select class="form-select" id="nvrDept">
+              <option value="">— Tanlang —</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <label class="form-label" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer">
+            <input type="checkbox" id="nvrAutoEnableAll" checked style="width:18px;height:18px;accent-color:var(--primary)">
+            <span style="font-weight:600;color:var(--text)">Barcha AI modullarni avtomatik yoqish</span>
+          </label>
+          <div style="font-size:11px;color:var(--text-muted);margin-left:28px;line-height:1.5">
+            Mavjud (.pt fayli bor) modullar har bir kameraga avtomatik biriktiriladi.
+            Keyinroq har bir kamera uchun alohida sozlashingiz mumkin.
+          </div>
+          <div id="nvrAvailableModules" style="margin-top:10px;margin-left:28px;display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+
+        <div id="nvrChannels" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeNvrModal()">Bekor</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-primary" id="nvrConnectBtn" onclick="nvrConnect()"><i data-lucide="link"></i>NVR'ga ulanish</button>
+        <button class="btn btn-primary" id="nvrImportBtn" style="display:none" onclick="nvrImport()"><i data-lucide="plus"></i>Tanlanganlarni qo'shish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/pages/cameras.js"></script>
+<script>
+  SergakApp.mountShell('cameras');
+  initCameras();
+
+  // ============ NVR ULANISH FUNKSIYALARI ============
+  let _nvrChannels = [];
+  let _nvrInfo = null;
+
+  function openNvrModal() {
+    document.getElementById('nvrStep1').style.display = '';
+    document.getElementById('nvrStep2').style.display = 'none';
+    document.getElementById('nvrStep3').style.display = 'none';
+    document.getElementById('nvrConnectBtn').style.display = '';
+    document.getElementById('nvrImportBtn').style.display = 'none';
+    document.getElementById('nvrError').style.display = 'none';
+    SergakApp.openModal('modalNvr');
+    // Bo'limlarni va modullarni yuklash
+    SergakAuth.fetch('/api/departments').then(r => r.json()).then(depts => {
+      const sel = document.getElementById('nvrDept');
+      sel.innerHTML = '<option value="">— Tanlang —</option>' +
+        depts.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+    }).catch(() => {});
+    // Mavjud modullarni ko'rsatish (badge'lar)
+    SergakAuth.fetch('/api/modules').then(r => r.json()).then(mods => {
+      const box = document.getElementById('nvrAvailableModules');
+      if (!box) return;
+      const ready = mods.filter(m => m.model_path && m.enabled);
+      const notReady = mods.filter(m => !m.model_path || !m.enabled);
+      box.innerHTML = ready.map(m =>
+        `<span style="background:${m.color};color:#fff;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px">
+          <i data-lucide="check" style="width:11px;height:11px"></i>${escapeHtml(m.name)}
+        </span>`
+      ).join('') + notReady.map(m =>
+        `<span title="Bu modul uchun .pt fayl yo'q" style="background:var(--surface-3);color:var(--text-dim);padding:4px 10px;border-radius:14px;font-size:11px;display:inline-flex;align-items:center;gap:4px;opacity:0.5">
+          <i data-lucide="x" style="width:11px;height:11px"></i>${escapeHtml(m.name)}
+        </span>`
+      ).join('');
+      if (window.lucide) lucide.createIcons();
+    }).catch(() => {});
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function closeNvrModal() {
+    SergakApp.closeModal('modalNvr');
+  }
+
+  function nvrSetStep(n, msg) {
+    document.getElementById('nvrStep1').style.display = n === 1 ? '' : 'none';
+    document.getElementById('nvrStep2').style.display = n === 2 ? '' : 'none';
+    document.getElementById('nvrStep3').style.display = n === 3 ? '' : 'none';
+    document.getElementById('nvrConnectBtn').style.display = n === 1 ? '' : 'none';
+    document.getElementById('nvrImportBtn').style.display = n === 3 ? '' : 'none';
+    if (msg && n === 2) document.getElementById('nvrConnectStep').innerText = msg;
+  }
+
+  function nvrShowError(text) {
+    const el = document.getElementById('nvrError');
+    el.innerText = text;
+    el.style.display = '';
+  }
+
+  async function nvrConnect() {
+    const ip = document.getElementById('nvrIp').value.trim();
+    const port = parseInt(document.getElementById('nvrPort').value.trim() || '80');
+    const username = document.getElementById('nvrUser').value.trim();
+    const password = document.getElementById('nvrPass').value;
+    const rtsp_port = parseInt(document.getElementById('nvrRtspPort').value.trim() || '554');
+
+    if (!ip || !username || !password) {
+      nvrShowError("IP, login va parol majburiy");
+      return;
+    }
+    document.getElementById('nvrError').style.display = 'none';
+    nvrSetStep(2, "NVR bilan aloqa o'rnatilmoqda...");
+
+    try {
+      const r = await SergakAuth.fetch('/api/discovery/nvr/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip, port, username, password, rtsp_port }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ detail: 'Noma' + "'" + 'lum xato' }));
+        nvrSetStep(1);
+        nvrShowError(err.detail || 'NVR\'ga ulanib bo\'lmadi');
+        return;
+      }
+      const data = await r.json();
+      _nvrInfo = data;
+      _nvrChannels = data.channels || [];
+
+      // UI yangilash
+      document.getElementById('nvrInfo').innerText =
+        `${data.brand} — ${data.model}` + (data.firmware ? ` (${data.firmware})` : '') +
+        ` · ${data.method}`;
+      document.getElementById('nvrChannelCount').innerText = _nvrChannels.length;
+
+      // Kanallar ro'yxati
+      const list = document.getElementById('nvrChannels');
+      list.innerHTML = _nvrChannels.map((ch, i) => `
+        <label style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer">
+          <input type="checkbox" class="nvr-channel-cb" data-idx="${i}" checked style="width:16px;height:16px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px;color:var(--text)">${escapeHtml(ch.name)}</div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(ch.rtsp_url_safe || ch.rtsp_url)}</div>
+          </div>
+          <div style="font-size:10px;padding:3px 8px;background:${ch.online ? 'rgba(16,185,129,.15)' : 'rgba(239,68,68,.15)'};color:${ch.online ? '#10b981' : '#ef4444'};border-radius:4px">${ch.online ? 'ONLAYN' : 'OFFLINE'}</div>
+        </label>
+      `).join('');
+
+      nvrSetStep(3);
+      if (window.lucide) lucide.createIcons();
+    } catch (e) {
+      nvrSetStep(1);
+      nvrShowError('Tarmoq xatosi: ' + e.message);
+    }
+  }
+
+  function nvrSelectAll(state) {
+    document.querySelectorAll('.nvr-channel-cb').forEach(cb => cb.checked = state);
+  }
+
+  async function nvrImport() {
+    const selected = Array.from(document.querySelectorAll('.nvr-channel-cb'))
+      .filter(cb => cb.checked)
+      .map(cb => _nvrChannels[parseInt(cb.dataset.idx)]);
+    if (!selected.length) {
+      nvrShowError("Kamida bitta kamera tanlang");
+      return;
+    }
+    const dept = document.getElementById('nvrDept').value;
+    const autoAll = document.getElementById('nvrAutoEnableAll').checked;
+
+    try {
+      const body = {
+        department_id: dept ? parseInt(dept) : null,
+        channels: selected,
+        nvr_ip: _nvrInfo.nvr_ip,
+      };
+      // Agar foydalanuvchi "hamma modullar" tasdiqlasa — backend o'zi avtomatik tanlaydi
+      // Aks holda bo'sh ro'yxat (faqat keyin qo'lda yoqiladi)
+      if (!autoAll) body.default_modules = [];
+
+      const r = await SergakAuth.fetch('/api/discovery/nvr/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (data.ok) {
+        closeNvrModal();
+        const modCount = (data.modules_enabled || []).length;
+        SergakApp.showToast('success', 'NVR import',
+          `${data.added} ta kamera qo'shildi · har biriga ${modCount} ta modul yoqildi`);
+        initCameras();  // Ro'yxatni yangilash
+      } else {
+        nvrShowError("Import xato");
+      }
+    } catch (e) {
+      nvrShowError("Tarmoq xatosi: " + e.message);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+  }
+
+  // Lucide icons (yangi tugma uchun)
+  if (window.lucide) lucide.createIcons();
+</script>
+</body>
+</html>

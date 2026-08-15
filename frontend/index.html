@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergak AI — Boshqaruv paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <div id="topbarMount"></div>
+    <div class="page-content">
+
+      <div class="welcome-banner">
+        <div class="welcome-icon"><i data-lucide="hand"></i></div>
+        <div class="welcome-text">
+          <h2>Xush kelibsiz, Mardonbek!</h2>
+          <p>Bugun tizim normal rejimda — 14 ta kamera onlayn, 47 ishchi nazoratda</p>
+        </div>
+        <div class="welcome-time">
+          <div class="clock" id="liveClock">14:32:18</div>
+          <div class="date" id="liveDate">Shanba, 9-may 2026</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon danger"><i data-lucide="alert-triangle"></i></div><div class="stat-trend down"><i data-lucide="trending-down"></i>12%</div></div>
+          <div class="stat-value">23</div><div class="stat-label">Bugungi qoidabuzarliklar</div>
+          <div class="stat-detail">Kechagidan 3 ta kam</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon success"><i data-lucide="camera"></i></div><div class="stat-trend down"><i data-lucide="check"></i>OK</div></div>
+          <div class="stat-value">14<span style="font-size:18px;color:var(--text-muted);font-weight:500">/14</span></div>
+          <div class="stat-label">Faol kameralar</div>
+          <div class="stat-detail">Hammasi onlayn</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon warning"><i data-lucide="zap"></i></div><div class="stat-trend up"><i data-lucide="trending-up"></i>3%</div></div>
+          <div class="stat-value">96.4<span style="font-size:18px;color:var(--text-muted);font-weight:500">%</span></div>
+          <div class="stat-label">AI aniqlik darajasi</div>
+          <div class="stat-detail">Oxirgi 1000 ta hodisada</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><div class="stat-icon"><i data-lucide="users"></i></div><div class="stat-trend down"><i data-lucide="users"></i>47</div></div>
+          <div class="stat-value">47</div><div class="stat-label">Hozir ishlayotgan</div>
+          <div class="stat-detail">8 bo'limda</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div>
+          <div class="section-header">
+            <div class="section-title"><i data-lucide="video"></i>Live Kameralar</div>
+            <div class="section-actions">
+              <button class="btn btn-ghost"><i data-lucide="grid-3x3"></i>4</button>
+              <button class="btn btn-ghost"><i data-lucide="grid-3x3"></i>9</button>
+              <button class="btn btn-secondary" onclick="window.location='cameras.html'"><i data-lucide="maximize-2"></i>Hammasi</button>
+            </div>
+          </div>
+          <div class="cameras-grid" id="liveCameras"></div>
+        </div>
+        <aside class="alerts-panel">
+          <div class="alerts-header">
+            <div class="section-title" style="font-size:14px"><i data-lucide="alert-circle"></i>So'nggi hodisalar</div>
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="window.location='events.html'">Hammasi</button>
+          </div>
+          <div class="alerts-list" id="alertsList"></div>
+        </aside>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">Hodisalar dinamikasi (oxirgi 7 kun)</div>
+            <select class="form-select" style="width:auto;padding:5px 10px;font-size:11px">
+              <option>7 kun</option><option>30 kun</option><option>3 oy</option>
+            </select>
+          </div>
+          <div class="chart-container"><canvas id="chartTimeline"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header"><div class="chart-card-title">Bo'limlar bo'yicha</div></div>
+          <div class="chart-container"><canvas id="chartDept"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header"><div class="chart-card-title">Modul bo'yicha</div></div>
+          <div class="chart-container"><canvas id="chartModule"></canvas></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/pages/dashboard.js"></script>
+<script>
+  SergakApp.mountShell('dashboard');
+  initDashboard();
+</script>
+</body>
+</html>
