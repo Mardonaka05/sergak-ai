@@ -1,0 +1,94 @@
+# Sergak AI — Configuration
+# Override .env values at runtime
+
+server:
+  host: 0.0.0.0
+  port: 5000
+
+ai:
+  inference_mode: fp16        # fp16 | fp32 | int8
+  frame_skip: 2               # analyze every Nth frame
+  motion_triggered: true      # skip empty frames (saves 70% GPU)
+  default_confidence: 0.65
+  default_cooldown_sec: 60
+
+# Per-module overrides
+modules:
+  helmet:
+    threshold: 0.65
+    cooldown: 60
+    priority: normal
+    model: helmet_v2.pt
+  fire:
+    threshold: 0.55
+    cooldown: 30
+    priority: critical
+    model: fire_v3.pt
+  fall:
+    threshold: 0.70
+    cooldown: 0           # always alert
+    priority: critical
+    model: fall_v2.pt
+  smoking:
+    threshold: 0.60
+    cooldown: 60
+    priority: high
+    model: smoking_v1.pt
+  phone:
+    threshold: 0.70
+    cooldown: 120
+    priority: low
+    model: phone_v1.pt
+  zone:
+    threshold: 0.60
+    cooldown: 30
+    priority: high
+    model: person_v1.pt
+  twoperson:
+    threshold: 0.65
+    cooldown: 30
+    priority: high
+    model: person_v1.pt
+
+# Per-department rules (override defaults)
+departments:
+  eritish:
+    name: "Eritish bo'limi"
+    modules: [helmet, fire, zone, fall]
+    fire_priority: critical
+  pechka:
+    name: "Pechkaxona"
+    modules: [helmet, smoking, fire, fall]
+    smoking_priority: critical
+  ombor:
+    name: "Ombor"
+    modules: [fall, phone, zone]
+  quyish:
+    name: "Quyish bo'limi"
+    modules: [helmet, fire, fall]
+  mexanik:
+    name: "Mexanik ustaxona"
+    modules: [helmet, phone, zone]
+  ofis:
+    name: "Ofis"
+    modules: [fire]
+
+network:
+  subnet: 192.168.1.0/24
+  onvif_timeout: 5
+
+storage:
+  snapshot_retention_days: 30
+  video_retention_days: 14
+
+notifications:
+  telegram:
+    enabled: true
+  whatsapp:
+    enabled: false
+  sms:
+    enabled: true
+    provider: eskiz.uz       # O'zbekiston
+    critical_only: true
+  email:
+    enabled: true
