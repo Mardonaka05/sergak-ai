@@ -1,0 +1,10 @@
+# Sergak AI - Kaska aniqlash YAKUNIY dataset
+path: D:/sergak dasturi/kaska/merged
+train: images/train
+val: images/val
+test: images/test
+
+nc: 2
+names:
+  0: helmet
+  1: no_helmet
